@@ -129,7 +129,9 @@ def main():
                 continue
 
     known = _load_baseline()
-    keys = ['%s|%s|%s' % (rel, kind, val) for rel, i, kind, val in hits]
+    # 基线 key 用文件名（不含目录）：目录调整不该产生假「新增」
+    keys = ['%s|%s|%s' % (os.path.basename(rel), kind, val)
+            for rel, i, kind, val in hits]
 
     if args.write_baseline:
         with open(BASELINE, 'w', encoding='utf-8') as f:
