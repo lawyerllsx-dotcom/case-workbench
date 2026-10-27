@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>法律工作台</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+/* ============================================================
+   法律工作台 · 视觉系统「CaseBoard 原版对齐」（批 57 令牌换准，2026-10-13）
+   参照：CaseBoard 0.4.18 源码令牌（reference\caseboard\src\styles\globals.css）
+   基调：冷灰蓝底 + 墨蓝主按钮（oklch 原值直用）+ 全无衬线
+   状态用 pastel 低饱和分色（11 档状态 → 7 组色，一眼分态）
+   沿革：暖色出版物（09-13）→ 批 56 近似换肤 → 批 57 精确对齐
+   ============================================================ */
+:root{
+  --paper:oklch(0.978 0.008 247); --card:oklch(0.997 0.003 247); --ink:oklch(0.205 0.025 250);
+  --muted:oklch(0.505 0.025 250); --faint:oklch(0.64 0.02 250);
+  --rule:oklch(0.895 0.015 247); --rule-soft:oklch(0.955 0.01 247);
+  --accent:oklch(0.34 0.075 250); --accent-deep:oklch(0.25 0.058 250); --accent-wash:oklch(0.948 0.028 247);
+  --ring:oklch(0.56 0.105 250); --shadow-color:oklch(0.29 0.045 250 / 12%);
+  --alert:#DC2626; --alert-wash:#FEF2F2;
+  --ok:#15803D; --ok-wash:#F0FDF4;
+  --warn:#A16207; --warn-wash:#FEFCE8;
+  --serif:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --serif-heavy:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  /* 批 56：pastel 状态分色（低饱和；class 名与 app.js statusPillClass 一一对应） */
+  --st-file:#E8EEF5;  --st-file-t:#31536F;   /* 待立案/已立案 · 蓝 */
+  --st-trial:#EDEBF7; --st-trial-t:#4E4A8E;  /* 待开庭/待判决/调解中 · 靛 */
+  --st-judge:#FBF3DF; --st-judge-t:#8A6D00;  /* 已判决 · 黄 */
+  --st-exefile:#F7EDE4;--st-exefile-t:#9C5528;/* 执行立案中/待缴费 · 橙 */
+  --st-exe:#ECF2EA;   --st-exe-t:#46694B;    /* 执行中 · 绿 */
+  --st-seal:#FAEDEA;  --st-seal-t:#A6392B;   /* 待续封 · 红 */
+  --st-grey:#F2F2F3;  --st-grey-t:#71717A;   /* 已结案/其他 · 灰 */
+}
+.p-file{background:var(--st-file);color:var(--st-file-t)}
+.p-trial{background:var(--st-trial);color:var(--st-trial-t)}
+.p-judge{background:var(--st-judge);color:var(--st-judge-t)}
+.p-exefile{background:var(--st-exefile);color:var(--st-exefile-t)}
+.p-exe{background:var(--st-exe);color:var(--st-exe-t)}
+.p-seal{background:var(--st-seal);color:var(--st-seal-t)}
+.p-grey{background:var(--st-grey);color:var(--st-grey-t)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+/* 批 78b：纸面微光——两层极淡径向光斑破除单调，观感近原色但更有空气感 */
+body{margin:0;color:var(--ink);
+  background:
+    radial-gradient(1400px 620px at 88% -12%,oklch(0.996 0.006 247 / 55%),transparent 70%),
+    radial-gradient(1000px 520px at -6% 2%,oklch(0.992 0.008 250 / 45%),transparent 65%),
+    var(--paper);
+  font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  font-variant-numeric:tabular-nums}
+
+/* 批 57：全局手感件（源 CaseBoard 手法——焦点环 / 选中色 / 滚动条 / 按压反馈） */
+:where(button,[role="button"],a):focus-visible{outline:3px solid oklch(0.56 0.105 250 / 32%);outline-offset:1px}
+::selection{background:var(--accent-wash);color:var(--ink)}
+*{scrollbar-width:thin;scrollbar-color:oklch(0.67 0.026 247 / 62%) transparent}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{min-height:36px;border:3px solid transparent;border-radius:999px;background:oklch(0.67 0.026 247 / 62%);background-clip:padding-box}
+*::-webkit-scrollbar-thumb:hover{background:var(--muted);background-clip:padding-box}
+button.act:active{transform:translateY(1px) scale(.985)}
+.layout{display:flex;align-items:stretch;min-height:100vh}
+
+/* ---------------- 左栏：导航（批 78：深色侧栏——Linear/Stripe 式仪表盘骨架） ---------------- */
+aside{width:206px;flex:0 0 206px;border-right:0;
+  background:linear-gradient(180deg,oklch(0.335 0.034 258),oklch(0.275 0.029 258));
+  padding:26px 0 18px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
+  box-shadow:inset -1px 0 0 oklch(1 0 0 / 8%)}
+aside .brand{padding:0 18px 4px;font:600 20px/1.3 var(--serif-heavy);letter-spacing:.01em;
+  color:oklch(0.97 0.01 250)}
+aside .brand small{display:block;margin-top:6px;font-size:12.5px;line-height:1.5;font-weight:400;
+  color:oklch(0.80 0.03 253 / 75%);letter-spacing:.05em;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+nav{padding:10px 0 0;overflow:auto;flex:1}
+nav .grp{padding:14px 18px 6px;font-size:11.5px;letter-spacing:.16em;color:oklch(0.74 0.03 253 / 62%)}
+nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;cursor:pointer;
+  background:none;padding:8px 14px 8px 19px;font-size:14.5px;line-height:1.4;color:oklch(0.86 0.018 253 / 88%);
+  border-left:3px solid transparent;transition:background .14s,color .14s}
+nav button:hover{background:oklch(1 0 0 / 7%);color:oklch(0.98 0.005 250)}
+nav button.on{color:#fff;font-weight:600;background:oklch(1 0 0 / 10%);border-left-color:oklch(0.75 0.11 235)}
+nav button .dot{width:5px;height:5px;border-radius:50%;background:oklch(0.75 0.03 253);opacity:.45;flex:0 0 5px}
+nav button.on .dot{background:oklch(0.8 0.12 235);opacity:1}
+aside .foot{padding:12px 18px 0;border-top:1px solid oklch(1 0 0 / 12%);margin:14px 0 0;
+  font-size:12.5px;line-height:1.7;color:oklch(0.78 0.025 253 / 72%)}
+aside .foot b{color:oklch(0.87 0.02 250);font-weight:600;font-family:var(--mono)}
+aside .foot button.act.ghost{background:oklch(1 0 0 / 6%);color:oklch(0.86 0.02 250);
+  border-color:oklch(1 0 0 / 16%)}
+aside .foot button.act.ghost:hover{background:oklch(1 0 0 / 12%);filter:none}
+
+/* ---------------- 主区 ---------------- */
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topstrip{display:flex;justify-content:flex-end;padding:12px 46px 0;
+  font-size:13px;color:var(--muted);min-height:20px}
+#main{padding:14px 46px 84px}
+.page{max-width:1180px;margin:0 auto;animation:pageIn .26s cubic-bezier(.2,.7,.3,1)}
+/* 批 78：页面进入微浮入（与批 69 #main 压暗分属内外层，不冲突） */
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.page{animation:none}}
+/* 宽版页面（批 C：台账助理——聊天区需要铺满视口宽高，不留窄栏） */
+.page.wide{max-width:none;display:flex;flex-direction:column;
+  min-height:calc(100vh - 120px)}
+.page.wide .asCard{flex:1;display:flex;flex-direction:column;min-height:0}
+#asFlow{flex:1;min-height:320px;overflow-y:auto}
+
+/* 页标题（批 78：层级拉开——标题更大更稳，底线更淡） */
+.ptitle{display:flex;align-items:baseline;gap:16px;padding:8px 0 18px;border-bottom:1px solid var(--rule-soft)}
+.ptitle h1{margin:0;font:650 29px/1.3 var(--serif);letter-spacing:.01em}
+.ptitle .sub{font-size:14px;color:var(--muted);max-width:720px}
+.ptitle .right{margin-left:auto;font-size:13px;line-height:1.6;color:var(--faint);
+  text-align:right;white-space:nowrap}
+.ptitle .right b{color:var(--muted);font-weight:600}
+
+h2{font:600 17px/1.4 var(--serif);margin:0 0 12px;display:flex;align-items:baseline;gap:10px}
+h3{font-size:14.5px;font-weight:600;margin:16px 0 8px;color:var(--ink)}
+/* 批 78：卡片高级感——多层柔阴影 + 更淡边框 + 更大圆角 */
+.card{background:var(--card);border:1px solid var(--rule-soft);border-radius:14px;
+  padding:22px 24px;margin:0 0 22px;
+  box-shadow:0 1px 2px oklch(0.29 0.045 250 / 4%),0 14px 34px -18px oklch(0.29 0.045 250 / 16%)}
+.card h2{margin:0 0 12px}
+.card pre{margin-bottom:0}
+
+/* 概览：账簿式统计条（9 格刚好铺满，不留空格） */
+.grid{display:flex;flex-wrap:nowrap;background:var(--card);border:1px solid var(--rule-soft);
+  border-radius:14px;overflow:hidden;margin:0 0 22px;
+  box-shadow:0 1px 2px oklch(0.29 0.045 250 / 4%),0 14px 34px -18px oklch(0.29 0.045 250 / 16%)}
+.kpi{flex:1 1 0;min-width:0;padding:18px 12px 16px;border-left:1px solid var(--rule-soft)}
+.kpi:first-child{border-left:0}
+.kpi b{display:block;font:600 26px/1.15 var(--mono);letter-spacing:-.02em;
+  color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.kpi b.red{color:var(--alert)} .kpi b.warn{color:var(--warn)} .kpi b.ok{color:var(--ok)}
+.kpi b.dim{color:var(--faint)}
+/* 标签预留最小高度：9 格不会因某一格标签折行而高低不齐（基线统一） */
+.kpi span{display:block;margin-top:8px;font-size:12.5px;line-height:1.45;color:var(--muted);
+  min-height:2.9em}
+/* 批 78b：KPI 格 hover 微提亮（账簿条也能交互） */
+.kpi{transition:background .15s}
+.kpi:hover{background:oklch(0.988 0.006 247)}
+
+/* ---------------- 表格（批 78：表头更精致、行 hover 更柔） ---------------- */
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;font-weight:600;letter-spacing:.09em;color:var(--faint);text-align:left;
+  padding:0 14px 10px;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:13px 12px;border-bottom:1px solid var(--rule-soft);vertical-align:top;
+  font-size:15px;line-height:1.55}
+table tr:last-child td{border-bottom:0}
+table tr:hover td{background:oklch(0.972 0.01 247)}
+table tbody tr{transition:background .12s}
+td.r,th.r{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.case{max-width:430px}
+td .sub{display:block;margin-top:4px;font-size:13px;line-height:1.5;color:var(--faint);
+  font-family:inherit}
+
+/* ---------------- 状态 / 标记 ---------------- */
+/* 批 78b：状态徽章质感——字重 600 更像「徽章」 */
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600;
+  white-space:nowrap;background:var(--accent-wash);color:var(--accent-deep)}
+.pill-ok{background:var(--ok-wash);color:var(--ok)}
+.pill-red{background:var(--alert-wash);color:var(--alert)}
+.pill-warn{background:var(--warn-wash);color:#7A5E00}
+.badge,.p0,.p1,.p2,.s0,.s1,.s2{display:inline-block;border-radius:999px;
+  padding:2px 10px;font-size:13px;font-weight:600;line-height:1.5;white-space:nowrap}
+.badge{background:oklch(0.945 0.015 247);color:var(--muted)}
+.p0{background:oklch(0.945 0.015 247);color:var(--muted)}
+.p1{background:var(--warn-wash);color:#7A5E00}
+.p2{background:var(--alert-wash);color:var(--alert)}
+.s0{background:var(--accent-wash);color:var(--accent-deep)}
+.s1{background:#E8EEF5;color:#31536F}
+.s2{background:var(--ok-wash);color:var(--ok)}
+
+.ok{color:var(--ok)} .warn{color:var(--warn)} .red{color:var(--alert)} .dim{color:var(--faint)}
+.hint{font-size:13px;line-height:1.75;color:var(--muted);margin-top:10px}
+/* 批 47k：长文本单行截断（配合 app.js clip()，悬停看全文）+ 页头标题不折行 */
+.clip{display:inline-block;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
+.ptitle h1{white-space:nowrap}
+/* 批 50：看板泳道（横向滚动卡片列；批 55b/56b：拖动横移，滚轮不劫持；批 56 CaseBoard 风） */
+.boardWrap{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;align-items:flex-start}
+/* 批 78b：泳道白底浮起——与卡片同质感；卡片圆角统一 12 */
+.boardLane{flex:0 0 auto;min-width:240px;max-width:300px;background:#fff;
+  border:1px solid var(--rule-soft);border-radius:14px;padding:12px;
+  box-shadow:0 1px 2px oklch(0.29 0.045 250 / 4%),0 10px 26px -16px oklch(0.29 0.045 250 / 14%)}
+.boardLane.boardDim{opacity:.55}
+.boardHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 8px;padding-bottom:8px;border-bottom:1px solid var(--rule-soft);
+  font-size:12.5px;letter-spacing:.06em;font-weight:600}
+.bcard{background:#fff;border:1px solid var(--rule);border-radius:12px;padding:11px 12px;margin:0 0 8px;cursor:pointer;
+  transition:transform .13s ease,box-shadow .13s ease,border-color .13s}
+.bcard:hover{transform:translateY(-2px);border-color:oklch(0.85 0.025 247);box-shadow:0 6px 16px var(--shadow-color)}
+.bname{font-weight:650;margin-bottom:4px;line-height:1.45}
+.bmeta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bprog{font-size:12.5px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px dashed var(--rule)}
+.clip2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* 批 56：首页问候区（CaseBoard 手法——caps 日期行 + 大问候 + 副标题） */
+.greet{padding:8px 0 22px}
+.greet .caps{font-size:12.5px;letter-spacing:.16em;color:var(--faint)}
+/* 批 78b：问候大字更有门面感（34px/700） */
+.greet h1{font-size:34px;line-height:1.22;margin:6px 0 4px;font-weight:700;letter-spacing:.01em}
+.greet .sub{font-size:15px;color:var(--muted)}
+.greet .sub b{color:var(--ink)}
+/* 批 47k：紧凑表格变体（律师函台账行专用）——横向 12→8、纵向 13→9，操作列能完整放下 */
+.tight{table-layout:fixed;width:100%}
+.tight th,.tight td{padding:8px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tight .act.mini{padding:3px 7px;font-size:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.row b{font-weight:600}
+
+pre{margin:10px 0;padding:12px 14px;background:oklch(0.966 0.012 247);border:1px solid var(--rule);
+  border-radius:8px;font-family:var(--mono);font-size:13px;line-height:1.6;
+  max-height:340px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+.tree{font-size:14px;max-height:400px;overflow:auto}
+.tree div{padding:3px 0 3px 12px;border-left:2px solid var(--rule)}
+.editbox{background:oklch(0.966 0.012 247);border:1px dashed var(--accent);border-radius:8px;padding:14px 16px}
+
+.seg{display:flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden;
+  background:#fff;width:fit-content}
+.seg button{background:#fff;border:0;border-right:1px solid var(--rule);
+  padding:6px 15px;cursor:pointer;font-size:14px;color:oklch(0.4 0.022 250)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--accent);color:#fff}
+
+/* ---------------- 表单 ---------------- */
+input,select,textarea{font-size:14.5px;line-height:1.5;padding:8px 12px;
+  border:1px solid var(--rule);border-radius:9px;background:#fff;color:var(--ink);
+  font-family:inherit;box-shadow:0 1px 2px oklch(0.29 0.045 250 / 4%);
+  transition:border-color .14s,box-shadow .14s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ring);
+  box-shadow:0 0 0 3px oklch(0.56 0.105 250 / 32%)}
+textarea{resize:vertical;line-height:1.6}
+input[type=file]{padding:5px 0;border:0;background:none;font-size:14px;color:var(--muted)}
+label{font-size:14px;color:var(--muted)}
+
+/* 批 78：主按钮质感——微渐变 + 双层阴影 + 内高光；幽灵按钮边框更柔 */
+button.act{appearance:none;border:1px solid oklch(0.29 0.068 250);
+  background:linear-gradient(180deg,oklch(0.375 0.08 250),oklch(0.315 0.072 250));
+  color:#fff;border-radius:9px;padding:8px 18px;font-size:14.5px;line-height:1.3;
+  cursor:pointer;font-family:inherit;white-space:nowrap;
+  box-shadow:0 1px 2px oklch(0.29 0.045 250 / 24%),inset 0 1px 0 oklch(1 0 0 / 9%);
+  transition:filter .14s,box-shadow .14s}
+button.act:hover{filter:brightness(1.09);
+  box-shadow:0 3px 8px oklch(0.29 0.045 250 / 28%),inset 0 1px 0 oklch(1 0 0 / 11%)}
+button.act.ghost{background:#fff;color:var(--ink);border-color:var(--rule);
+  box-shadow:0 1px 2px oklch(0.29 0.045 250 / 5%)}
+button.act.ghost:hover{background:oklch(0.955 0.015 247);filter:none;
+  box-shadow:0 1px 2px oklch(0.29 0.045 250 / 8%)}
+button.act.mini{padding:4px 12px;font-size:13px}
+
+.form-grid{display:grid;grid-template-columns:2fr 1.6fr 1fr 1fr 1.1fr auto;
+  gap:10px;align-items:center}
+/* grid 项默认 min-width:auto，input/select 的固有宽度会把 1fr 列撑爆容器（任务页实测溢出） */
+.form-grid>*{min-width:0}
+.nw{white-space:nowrap}
+/* 数字专用：等宽字体 + 表格数字对齐（比例字体下数字宽度会跳，列看起来会抖） */
+.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* 语义色图例（全站统一口径，写在这里当唯一出处）
+   红 = 已出问题：逾期 / 超期 / 剩余尾款>0（钱没到）/ 发票号空缺
+   黄 = 需跟进但未坏：临期 3–7 日 / 优先级「重要」/ 状态池外 / 待入库件数 / 费用缺口
+   绿 = 已办好或达标：已完成 / 已结案 / 缺口=0 / 有 09·10 / 材料说明✓
+   墨 = 常态数字（客户数、案件数、标的额、已收到…），不加色
+   灰 = 空 / 无数据 / 认不出 */
+@media(max-width:1180px){.form-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <div class="brand">法律工作台<small>本机运行</small></div>
+    <nav id="nav"></nav>
+    <div class="foot">
+      <div><b id="footAddr">127.0.0.1:8899</b></div>
+    <div>本机运行</div>
+      <div>台账：案件管理台账模版表</div>
+      <div>受控回写：仅 2 列</div>
+      <button class="act ghost mini" style="margin-top:10px" onclick="quitWorkbench()">关闭服务</button>
+    </div>
+  </aside>
+  <main>
+    <div class="topstrip"><span id="meta">加载中…</span>
+      <span id="bell" title="未读智能提醒 + 7 日内期限（点击回首页查看）" onclick="go('home')"
+        style="display:none;margin-left:10px;padding:1px 8px;border-radius:10px;background:var(--alert);
+        color:#fff;font:600 11px/1.7 inherit;cursor:pointer">0</span></div>
+    <div id="main"></div>
+  </main>
+</div>
+<script src="/static/app.js?v=104"></script>
+</body>
+</html>
