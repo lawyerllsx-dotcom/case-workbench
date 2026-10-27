@@ -5,6 +5,10 @@
 > 目标不是做「又一套律所 SaaS」，而是把一位诉讼律师日常真正重复的几十个动作，收进一个能看懂、能改、能拆的本地工具里。
 > **代码全部开源，数据一行不带走。**
 
+![首页](docs/screenshots/home.png)
+
+<sub>首页 · 看板 · 案件 · 台账进展：[看板](docs/screenshots/board.png) ｜ [案件](docs/screenshots/cases.png) ｜ [台账](docs/screenshots/ledger.png)（均为 `demo_seed.py` 生成的虚构数据）</sub>
+
 ---
 
 ## 它解决什么问题

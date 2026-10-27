@@ -5297,6 +5297,10 @@ async function render() {
   /* 批 47b：页脚地址动态化——页脚=真实连接地址，一眼自证「窗口连的是谁」
      （12:33 实踩：硬编码 8799 让用户误判窗口连错，实际已连 8899） */
   try { document.getElementById('footAddr').textContent = '127.0.0.1:' + (location.port || '8899'); } catch (e) {}
+  try { fetch('/api/health').then(r => r.json()).then(h => {
+    const el = document.getElementById('footLedger');
+    if (el && h && h.ledger) el.textContent = h.ledger;
+  }).catch(() => {}); } catch (e) {}
   TAB = tabFromHash();
   renderNav();
   try { OVERVIEW = await api('/api/overview'); } catch (e) {}

@@ -3093,7 +3093,11 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == '/api/assistant/ignore':
                 return self._send(200, {'items': assistant_ops.load_ignore()})
             if u.path == '/api/health':
-                return self._send(200, {'ok': True, 'version': VERSION})
+                return self._send(200, {
+                    'ok': True, 'version': VERSION,
+                    'ledger': os.path.basename(ledger_ops.ledger_path() or ''),
+                    'write_cols': 2,
+                })
             if u.path == '/api/quit':
                 # 供「关闭法律工作台」图标调用；也支持在浏览器直接访问本地址关停
                 self._send(200, {'ok': True, 'msg': '工作台正在关闭，页面可以关掉了'})
