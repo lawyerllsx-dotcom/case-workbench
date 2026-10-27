@@ -77,6 +77,7 @@ python ledger_ops.py selftest      # 台账库回归（改了 ledger_ops 才需�
 | `sohan_ops.py` / `commission_ops.py` | 所内文书模板 | 放自己的模板进 `templates/`，字段名对齐 `templates/委托材料/` 的占位符 |
 | `deadline_check.py` toast | Windows toast + AUMID | 无替代则降级为「页面内提醒」；跨平台请走 webhook |
 | `launch_workbench.pyw` / `shell_workbench.pyw` | Windows + pywebview | 直接 `python app.py` 即可，不需要壳 |
+| `export_batch_data.py` | 作者的批量文书系统目录 | 改成导出 CSV/Excel 给自己的合并模板（见 INTEGRATIONS 第五节） |
 
 **给 agent 的额外提示**：如果你要在这套代码上写「AI 自动改文件」的功能，先装同作者的
 `write-guard`：写前 `assert`、写后 `stamp`。没有它，重跑生成脚本会覆盖人手改过的文书——
