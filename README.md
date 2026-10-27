@@ -50,6 +50,7 @@ python app.py              # 打开 http://127.0.0.1:8899
 
 | 你是 | 先读 |
 |---|---|
+| 只想跑起来 / 让 AI 帮你部署 | [docs/DEPLOY.md](docs/DEPLOY.md)（含可直接粘贴给 agent 的提示词） |
 | 想用起来 | 本文件「接自己的台账」 |
 | 想让 AI 帮你改代码 | [AGENTS.md](AGENTS.md) |
 | 想接自己的 LLM / OCR / 知识库 / 通知 | [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) |
