@@ -18,11 +18,16 @@
 ```bash
 git clone https://github.com/lawyerllsx-dotcom/case-workbench.git
 cd case-workbench
-python -m pip install -r requirements.txt     # 只有 openpyxl
+python -m pip install openpyxl                 # 最小可用（只有这一个必需）
+# 想一次装齐（卷宗装订 / 所函 / 示例素材）：
+# python -m pip install pymupdf docxtpl python-docx pillow
 python demo_seed.py                            # 生成虚构示例数据（幂等）
 python verify.py                               # 自检，退出码 0 = 可用
 python app.py --port 8899                      # 起服务（前台运行）
 ```
+
+> `demo_seed.py` 结尾若提示「可选依赖未安装，示例素材不完整」，属正常——核心功能不受影响，
+> 想看完整示例（签收凭证、散件、错位样本）再补装即可。功能对照见 [FEATURES.md](FEATURES.md)。
 
 **成功判据（三条全满足才算成）**
 
@@ -51,6 +56,9 @@ python app.py --port 8899                      # 起服务（前台运行）
 | 8899 被占用 | 已有实例在跑 | `python app.py --port 8900` |
 | 页面能开但数字全是 0 | 没跑 `demo_seed.py`，或台账路径不对 | 先 seed；接自己台账见 README「接自己的台账」 |
 | `openpyxl` 缺失 | 只装了 Python 没装依赖 | `python -m pip install openpyxl` |
+| 卷宗装订页报「未安装 PyMuPDF」 | 可选依赖未装 | `pip install pymupdf` |
+| 生成所函报「未安装 docxtpl」 | 可选依赖未装 | `pip install docxtpl` |
+| `demo_seed` 提示「示例素材不完整」 | 缺 pillow / pymupdf | `pip install pillow pymupdf` 后 `--force` 重建 |
 | 中文乱码（Windows 控制台） | 终端代码页 | `chcp 65001`，或在 Windows Terminal 里跑 |
 | macOS/Linux 上 `start.sh` 无权限 | 未加执行位 | `chmod +x start.sh` |
 

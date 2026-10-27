@@ -63,6 +63,16 @@ python ledger_ops.py selftest      # 台账库回归（改了 ledger_ops 才需�
 
 **不要用「我改完了看起来没问题」交差**：这个项目的回归断言 700+ 条，专治「看起来没问题」。
 
+**动了 import 或新增第三方库时，必须额外验一次「干净环境能启动」**：
+
+```bash
+python -m venv /tmp/clean && /tmp/clean/Scripts/pip install openpyxl
+/tmp/clean/Scripts/python -c "import app; print('ok')"
+```
+
+规则：**除了 openpyxl，任何第三方库都只能在函数内延迟导入，或包在 try/except 里**。
+模块级 `import pymupdf` 会让没装该库的人连服务都起不来——这个坑已经踩过一次（binding_ops）。
+
 ## 五、前端三条特殊纪律（踩过 6 次）
 
 1. **搜索框禁止整页重绘**：用 `patchInner()` 只换表格容器；`render()` 会销毁输入框、打断中文输入法。

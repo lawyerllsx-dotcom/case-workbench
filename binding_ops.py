@@ -19,7 +19,14 @@ r"""binding_ops.py — 卷宗装订包（批 59，2026-10-13；CaseBoard 0.5.26�
 import datetime
 import os
 
-import pymupdf
+try:                       # PyMuPDF 是可选依赖：没装只让「卷宗装订」不可用，不影响启动
+    import pymupdf
+    HAS_PYMUPDF = True
+    _PYMUPDF_ERR = ''
+except ImportError:        # noqa: BLE001
+    pymupdf = None
+    HAS_PYMUPDF = False
+    _PYMUPDF_ERR = '未安装 PyMuPDF（pip install pymupdf），卷宗装订功能不可用'
 
 BIND_SUBDIR = '卷宗装订'
 # 入卷顺序 = 案卷规范目录序（case_ops.TREE_BASE 的正文七夹）
@@ -276,6 +283,8 @@ def _page_summary(doc, case_name, meta, stats, body_pages):
 # ---------------------------------------------------------------- 主流程
 
 def build(case_dir, case_name, meta=None, apply=False):
+    if not HAS_PYMUPDF:
+        return {'error': _PYMUPDF_ERR}
     r"""生成卷宗装订包。
 
     apply=False → {'dry_run': True, 'plan': {...}}（零副作用，只扫描 + 预检）

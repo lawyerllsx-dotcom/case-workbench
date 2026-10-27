@@ -311,7 +311,11 @@ def apply_sohan(plan):
     tpl, dst = plan['template'], plan['dst']
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     if plan.get('mode') == 'placeholder':
-        from docxtpl import DocxTemplate
+        try:
+            from docxtpl import DocxTemplate
+        except ImportError:
+            raise ValueError('未安装 docxtpl（pip install docxtpl），占位符模板无法渲染；'
+                             '也可改用固定文本节点模板')
         t = DocxTemplate(tpl)
         t.render(plan['values'])
         t.save(dst)

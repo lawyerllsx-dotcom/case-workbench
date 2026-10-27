@@ -51,6 +51,7 @@ python app.py              # 打开 http://127.0.0.1:8899
 | 你是 | 先读 |
 |---|---|
 | 只想跑起来 / 让 AI 帮你部署 | [docs/DEPLOY.md](docs/DEPLOY.md)（含可直接粘贴给 agent 的提示词） |
+| 想知道「不装依赖能用哪些功能」 | [docs/FEATURES.md](docs/FEATURES.md)（功能矩阵） |
 | 想用起来 | 本文件「接自己的台账」 |
 | 想让 AI 帮你改代码 | [AGENTS.md](AGENTS.md) |
 | 想接自己的 LLM / OCR / 知识库 / 通知 | [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) |
@@ -145,10 +146,13 @@ sanitize_check.py      隐私自检（基线之外零新增）
 
 | 组件 | 配什么 | 不配的后果 |
 |---|---|---|
+| 卷宗装订 | `pip install pymupdf` | 该页提示「未安装 PyMuPDF」 |
+| 所函 / 委托六件套 | `pip install docxtpl` | 点生成时报错并提示装依赖 |
 | AI 助理 / 智能提醒 | `llm.base_url`（任意 OpenAI 兼容端点）+ 密钥文件 | 助理页显示「未配置」，其余页正常 |
 | 本地 OCR | `ocr.enabled` + `ocr.python`（自备 PaddleOCR 环境） | 入库页「本地识别」按钮不可用 |
 | 桌面窗口 | 装 `pywebview` | 用浏览器打开，功能一样 |
-| 卷宗装订 | 装 `PyMuPDF` | 该页提示缺少依赖 |
+
+**完整清单见 [docs/FEATURES.md](docs/FEATURES.md)**：哪些开箱即用、哪些装依赖才有、哪些要配置、哪些要自备数据。
 
 **任何情况下数据都不出本机**：页面只监听 `127.0.0.1`，前端无 CDN、无外链。
 

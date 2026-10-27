@@ -32,6 +32,7 @@ except ImportError:
     sys.exit('缺少 openpyxl：pip install openpyxl')
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+_MISSING = set()          # 缺哪些可选依赖，结尾统一提示
 
 # 目录规范（与 case_ops.TREE_BASE 一致；示例数据不写死业务语义）
 TREE_BASE = ['00-收件箱', '需盖章文件', '01-委托手续', '02-法律文书', '03-证据材料',
@@ -88,6 +89,7 @@ def _make_pdf(path, text):
         try:
             import fitz as pymupdf
         except ImportError:
+            _MISSING.add('pymupdf')
             return ''
     doc = pymupdf.open()
     page = doc.new_page()
@@ -104,6 +106,7 @@ def _make_jpg(path):
     try:
         from PIL import Image, ImageDraw
     except ImportError:
+        _MISSING.add('pillow')
         return ''
     img = Image.new('RGB', (600, 800), '#F5F5F5')
     d = ImageDraw.Draw(img)
@@ -125,6 +128,7 @@ def _make_sohan_template():
         from docx import Document
         from docx.shared import Pt
     except ImportError:
+        _MISSING.add('python-docx')
         return ''
     os.makedirs(os.path.dirname(p), exist_ok=True)
     d = Document()
@@ -215,6 +219,7 @@ def _make_commission_templates():
         from docx import Document
         from docx.enum.text import WD_ALIGN_PARAGRAPH
     except ImportError:
+        _MISSING.add('python-docx')
         return 0
     made = 0
     for fname, spec in COMMISSION_DOCS.items():
@@ -403,6 +408,16 @@ def main():
     # 所函 + 委托六件套模板（匿名骨架版，让两个文书功能开箱可用）
     _make_sohan_template()
     print('委托模板：新增 %d 件' % _make_commission_templates())
+
+    if _MISSING:
+        print()
+        print('⚠️  以下可选依赖未安装，示例素材不完整（不影响核心功能）：')
+        for _m in sorted(_MISSING):
+            print('   - %s' % _m)
+        print('   补全：pip install %s' % ' '.join(
+            {'pymupdf': 'pymupdf', 'pillow': 'pillow',
+             'python-docx': 'python-docx'}[m] for m in sorted(_MISSING)))
+        print('   然后：python demo_seed.py --force')
 
     print('\n完成。下一步：')
     print('  python app.py --port 8899')

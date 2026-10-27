@@ -1,7 +1,10 @@
 # 必需
 openpyxl>=3.1          # 台账读写（xlsx）
 
-# 可选：按需装，不装也能启动，只是对应功能不可用
-# PyMuPDF>=1.24        # 卷宗装订包（PDF 书签/页码）
-# docxtpl>=0.18        # 委托手续六件套渲染
+# ── 以下均可选：不装也能启动，缺哪个只影响对应功能（详见 docs/FEATURES.md）──
+# 一次装齐：pip install pymupdf docxtpl python-docx pillow
+# PyMuPDF>=1.24        # 卷宗装订（合并 PDF + 连页书签）
+# docxtpl>=0.18        # 所函渲染（{{变量}} 模板）、委托手续套件
+# python-docx>=1.1     # 读回校验生成的 docx；demo_seed 生成骨架模板
+# pillow>=10.0         # demo_seed 生成示例图片（签收凭证）
 # pywebview>=5.0       # 桌面窗口壳（否则用浏览器打开）
