@@ -55,7 +55,7 @@ def main():
         ck('meta 档位（审级 3 / 授权 2 / 类型 5）',
            len(m['stages']) == 3 and len(m['auth_types']) == 2 and len(m['case_types']) == 5)
         ck('meta 默认律师与法院', m['defaults']['lawyer'] == '张律师'
-           and '集美' in m['defaults']['court'])
+           and bool(m['defaults']['court'].strip()))
 
         # ---------- plan ----------
         fields = {'client': '测试委托人甲', 'opponent': '测试对方乙', 'cause': '买卖合同纠纷',

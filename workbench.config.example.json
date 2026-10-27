@@ -117,12 +117,12 @@
     ]
   },
   "lawyer": {
-    "name": "张三",
+    "name": "张律师",
     "phone": "",
     "license": "",
     "firm": "",
     "address": "",
-    "default_court": ""
+    "default_court": "某市某区人民法院"
   },
   "llm": {
     "base_url": "",

@@ -121,8 +121,8 @@ templates/             文书模板（自备）
 
 ## 已知限制
 
-- **示例数据下 6 项前端冒烟会 SKIP**（系列案总夹、律师函签收按钮、散件入库入口等需要真实数据形态才渲染）。实际输出存于 [docs/smoke_baseline.txt](docs/smoke_baseline.txt)，接真实台账后应为 PASS。
-- **模板要自备**：仓库不带所内文书模板，`templates/委托材料/` 与 `templates/所函模板.docx` 需按 [templates/README.md](templates/README.md) 放自己的；缺失时对应页面提示不可用（相关测试标 SKIP）。
+- **示例数据下前端 19 页全部 PASS、20 个接口测试全部 PASS**（实际输出见 [docs/smoke_baseline.txt](docs/smoke_baseline.txt)）。
+- **模板自带骨架版**：`templates/委托材料/`（六件套）与 `templates/所函模板.docx` 由 `demo_seed.py` 生成，可开箱使用；**正式出文书前请换成所内审定版本**（见 [templates/README.md](templates/README.md)）。
 - **`smoke_views.py` 需要 Node**；`test_api_binding.py` 需要 PyMuPDF、`test_trace_ui.py` 需要 playwright——没装会 **SKIP 而不是 FAIL**。
 - **Windows 优先**：toast 通知、桌面快捷方式、`os.startfile` 是 Windows 实现；其他系统能用主界面，通知类功能降级。
 - **不替代备份**：所有闸门都假设你另有备份（工作台自己也会在写前备份）。

@@ -50,11 +50,11 @@ DEFAULT_LAWYER = (_config.get('lawyer.name', '') or '') + '律师'
 
 # 模板里「已填样例」的原始文本（用于识别 + 校验是否替换干净）
 _TPL_SAMPLES = {
-    'court': '福建省惠安县人民法院',
-    'client': '周锦全、周高典、王彩丽、周科清、周科明',
-    'lawyer': '张律师律师',
-    'stage': '强制执行',
-    'opponent_cause': '骆纪川、张桂珍、张伟城、骆锦泉、骆琼珍、骆培阳、骆培祥、孙庄土地经营权出租合同',
+    'court': '某市某区人民法院',
+    'client': '甲公司、乙公司',
+    'lawyer': '张律师',
+    'stage': '一审',
+    'opponent_cause': '丙公司、丁公司买卖合同',
 }
 
 
@@ -74,6 +74,20 @@ def template_ok():
     except (zipfile.BadZipFile, OSError) as e:
         return False, '模板不是有效 docx：%r' % (e,)
     return True, ''
+
+
+def template_mode():
+    """模板形态：'placeholder' = 含 {{变量}}（通用，推荐）；'node' = 固定文本节点（老模板）。
+    开源版优先占位符模式；两种都支持，互不影响。"""
+    p = template_path()
+    if not os.path.isfile(p):
+        return ''
+    try:
+        with zipfile.ZipFile(p) as z:
+            xml = z.read('word/document.xml').decode('utf-8', 'replace')
+    except (zipfile.BadZipFile, OSError, KeyError):
+        return ''
+    return 'placeholder' if '{{' in xml else 'node'
 
 
 # ------------------------------------------------------------------ 文本节点读写
@@ -147,6 +161,9 @@ def plan_sohan(court='', client='', lawyer='', stage='', opponent='', cause='', 
     lawyer = str(lawyer or '').strip() or DEFAULT_LAWYER
     opponent = str(opponent or '').strip()
     cause = str(cause or '').strip()
+
+    if template_mode() == 'placeholder':
+        return _plan_by_placeholder(court, client, lawyer, stage, opponent, cause, case_folder)
 
     tpl = template_path()
     xml = _doc_xml(tpl)
@@ -230,12 +247,75 @@ def _free_name(name, dirs):
         i += 1
 
 
+def _dst_of(opponent, client, cause, case_folder):
+    """目标路径（两种模板模式共用）。"""
+    folder = str(case_folder or '').strip()
+    if folder and not os.path.isdir(folder):
+        return None, None, '案卷夹不存在：%s' % folder
+    if folder:
+        dst_dir = os.path.join(folder, '01-委托手续')
+    else:
+        biz = os.environ.get('CASE_OPS_BIZ_ROOT') or _config.path('paths.biz_root')
+        dst_dir = os.path.join(biz, '所函', '_生成', datetime.now().strftime('%Y%m%d'))
+    who = _safe_fn(str(opponent or client).split('、')[0])[:20]
+    fname = '所函-%s%s.docx' % (who, ('-'+cause) if cause else '')
+    return dst_dir, os.path.join(dst_dir, _free_name(fname, [dst_dir])), ''
+
+
+def _plan_by_placeholder(court, client, lawyer, stage, opponent, cause, case_folder):
+    """占位符模板（{{变量}}）的计划：只算值，不碰 XML。"""
+    dst_dir, dst, err = _dst_of(opponent, client, cause, case_folder)
+    if err:
+        return {'blocked': err, 'mode': 'placeholder'}
+    # 空值保留占位符：传回 '{{ key }}' 字面量，渲染后仍能一眼看见「这里没填」
+    def keep(k, v):
+        v = str(v or '').strip()
+        return v if v else '{{ %s }}' % k
+
+    values = {
+        'court': court, 'client': client, 'lawyer': lawyer,
+        'stage': keep('stage', stage), 'opponent': keep('opponent', opponent),
+        'cause': keep('cause', cause),
+        'firm': _config.get('lawyer.firm', '') or '{{ firm }}',
+        'body': '{{ body }}', 'days': '{{ days }}',
+        'date': '  年  月  日',              # 日期留空，手填
+    }
+    steps = [
+        {'字段': '致送法院', '改前': '{{ court }}', '改后': court, '命中': True, '保留原文': False},
+        {'字段': '委托人', '改前': '{{ client }}', '改后': client, '命中': True, '保留原文': False},
+        {'字段': '承办律师', '改前': '{{ lawyer }}', '改后': lawyer, '命中': True, '保留原文': False},
+        {'字段': '诉讼阶段', '改前': '{{ stage }}', '改后': values['stage'],
+         '命中': True, '保留原文': values['stage'].startswith('{{')},
+        {'字段': '对方与案由', '改前': '{{ opponent }} / {{ cause }}',
+         '改后': '%s %s' % (values['opponent'], values['cause']),
+         '命中': True, '保留原文': values['opponent'].startswith('{{')},
+    ]
+    # 预览用 xml：把日期占位换成留空样式，前端与冒烟据此判断「日期未被自动填写」
+    try:
+        _xml = _doc_xml(template_path())
+        for _pat in ('{{ date }}', '{{date}}'):
+            _xml = _xml.replace(_pat, values['date'])
+    except (zipfile.BadZipFile, OSError, KeyError):
+        _xml = ''
+    return {'mode': 'placeholder', 'template': template_path(), 'template_src_doc': TPL_DOC,
+            'dst': dst, 'dst_dir': dst_dir, 'case_folder': str(case_folder or ''),
+            'values': values, 'steps': steps, 'leftover': [], 'xml': _xml,
+            'date_blank': True}
+
+
 def apply_sohan(plan):
-    """按计划落盘（复制模板 zip → 换 document.xml → 写新文件）。**模板与案卷既有文件不动。**"""
+    """按计划落盘（占位符模板走 docxtpl；固定节点模板走 zip 文本替换）。
+    **模板与案卷既有文件不动。**"""
     if plan.get('blocked'):
         raise ValueError(plan['blocked'])
     tpl, dst = plan['template'], plan['dst']
     os.makedirs(os.path.dirname(dst), exist_ok=True)
+    if plan.get('mode') == 'placeholder':
+        from docxtpl import DocxTemplate
+        t = DocxTemplate(tpl)
+        t.render(plan['values'])
+        t.save(dst)
+        return {'dst': dst, 'bytes': os.path.getsize(dst), 'mode': 'placeholder'}
     new_xml = plan['xml'].encode('utf-8')
     with zipfile.ZipFile(tpl) as zin:
         items = zin.infolist()

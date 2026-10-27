@@ -39,7 +39,7 @@ DEFAULTS = {
         'sheet_contract': '合同审查',
         'sheet_payment': '执行款',
     },
-    'lawyer': {'name': '张三', 'phone': '', 'license': '', 'firm': '', 'address': '',
+    'lawyer': {'name': '张律师', 'phone': '', 'license': '', 'firm': '', 'address': '',
                'default_court': ''},
     'llm': {'base_url': '', 'model': '', 'api_key_file': ''},
     'ocr': {'enabled': False, 'python': '', 'script': ''},

@@ -8,34 +8,55 @@ CHECK board 拖拽滚动 + 点击吞没 + 状态分色 + wheel劫持已删 OK
 PASS board  (html 2261 字符)
 PASS clients  (html 1772 字符)
 CHECK cases 台账行/时间轴渲染 OK（未匹配明说 + 已匹配给依据与时间轴）
-SKIP cases  :: 系列案总夹未显示徽章  （示例数据不足，非代码缺陷）
+CHECK cases 台账列/子夹视图/差旅区块 OK（系列案 1，认到台账行 0）
+CHECK cases 执行款区块（记录/同步/删）+ 渲染 OK
+CHECK cases 搜索框触发点 5/5 + 中文收窄/空态/还原 OK（1/4）
+PASS cases  (html 3575 字符)
 CHECK tasks 关联案件取自台账行 OK（样本 民-A-26…）
 PASS tasks  (html 2008 字符)
-SKIP ledger  :: 中文查询未收窄到目标行  （示例数据不足，非代码缺陷）
+CHECK ledger 搜索 OK（全量 1292 → 海 51 → 空 51 → 当事人丙 425 → 还原 1292）
+CHECK ledger 搜索框触发点 5/5 且 oninput/回车表达式可调用 OK
+CHECK ledger K 列状态下拉就位（池 11 个取值）
+PASS ledger  (html 2548 字符)
 CHECK new 开案页字段齐全 + 预览/结果引导 OK
 CHECK new 预填卡 OK（两入口 + 两函数）
-PASS new  (html 2475 字符)
+PASS new  (html 2522 字符)
 CHECK writing 项目表/chips 计数/本地筛选 OK
-PASS writing  (html 3468 字符)
+PASS writing  (html 3515 字符)
 CHECK intake 法院短信卡 + 三纯函数渲染 + 下载请求链 OK
-PASS intake  (html 1613 字符)
+PASS intake  (html 2101 字符)
 CHECK fees 差旅发票索引入口 OK
-CHECK fees 发票上传/归案入口 OK（案件下拉 3，库根 D:\WorkArea\opensource\case-workbench\demo\案件\发票库）
+CHECK fees 发票上传/归案入口 OK（案件下拉 4，库根 D:\WorkArea\opensource\case-workbench\demo\案件\发票库）
 PASS fees  (html 3717 字符)
 CHECK deadlines 双视图 OK（清单 + 月视图·日程；未完成期限 0 条，手工日程 0 条）
 CHECK deadlines 无未完成期限项 → 跳过按钮断言
 PASS deadlines  (html 1814 字符)
 CHECK archive 卷宗装订包卡片 + dry-run 请求 + 清单/完成渲染 OK
 CHECK archive 归档三步入口 + 知识库案件页清单 OK（页 0，已标 0）
-PASS archive  (html 2787 字符)
+PASS archive  (html 2863 字符)
 CHECK letters 新增发函对象入口 OK（7 字段 + letterAddDo，批 41）
 CHECK letters 一键打开文件夹 + EMS 导入 OK（7 函数 + 3 元素 + 2 工具，批 46）
-SKIP letters  :: 缺「签收」按钮（批 48 由「签收记录」缩名）  （示例数据不足，非代码缺陷）
+CHECK letters 点击→请求 OK（签收记录/看文件均实时；函件入口+重扫真刷新，批 48）
+CHECK letters 所在文件夹走 open_folder OK（含 select；下载已退役），批 47e
+CHECK letters 签收记录按材料归组 OK（png/PDF 同源成对挨着），批 47e
+CHECK letters 预览走 file_view 直出 OK（PDF=iframe / 图片=img，无 dataURL），批 47
+CHECK onclick 字符串参数全部 esc 包裹（防 HTML 属性双引号截断）×16，批 47c
+CHECK 预览浮层 footer onclick 变量已 esc 包裹，批 47f
+CHECK letters 预览卡渲到表格下方（防撑破）+ 取消按钮 OK，批 46.2
+CHECK letters 建任务两段式（预览→确认）OK
+CHECK letters 「后续跟进为空」一键建跟进任务 OK（空 1 / 共 2 行）
+CHECK letters 律师函台 OK（2 行，可写列 签收状态/后续跟进；三段联动 + 4 个回写函数 + 未认到明说 1 行）
+PASS letters  (html 5674 字符)
 CHECK contracts 表格/统计头/chips/建夹指引 OK
 PASS contracts  (html 3199 字符)
-SKIP scatter  :: 散件页缺入库入口  （示例数据不足，非代码缺陷）
-SKIP sohan  :: 所函模板不可用：模板不存在：D:\WorkArea\opensource\case-workbench\templates\所函模板.docx  （示例数据不足，非代码缺陷）
-SKIP trace  :: 详情页缺归位入口  （示例数据不足，非代码缺陷）
+CHECK scatter 散件索引 OK（共 3 个文件，连上台账 0 个；触发点 5/5 + 搜索收窄 + 空态 + 还原 + 目录筛选）
+CHECK scatter 批38+39c 标记+入库 OK（标记 0 项 / 认到案件 0 件（多案并存 0））
+PASS scatter  (html 6899 字符)
+CHECK sohan 所函页 OK（模板就位 + 7 字段 + 阶段 9 个；预览 5 步全命中、目标在 01-委托手续、日期留空、旧值已清）
+CHECK sohan 委托手续套件 OK（6 件模板 + 解析 2 例 + 预览 6 件）
+PASS sohan  (html 4873 字符)
+CHECK trace 留痕页 OK（4 案卷 / 版本族 0 / 残留 0）
+PASS trace  (html 2842 字符)
 CHECK assistant 工作台助理 OK（对话 4 控件 + 7 函数 + 首页提醒卡三断言）
 PASS assistant  (html 1141 字符)
 CHECK calc ⑪ 执行款清偿分配（3 组手算 + 行解析）OK
@@ -43,4 +64,3 @@ CHECK calc ⑫⑬⑭ 劳动第二期（4 组加班/竞业/工伤 + 最低工资�
 CHECK calc 计算器 11 组大写 + 9 组分段/利息 + 3 组解析 + 4 组律师费区间 + 7 组劳动核验 OK
 CHECK deepdive 研究报告区块（两类并列）+ 预览请求路径 OK
 PASS calc  (html 13876 字符)
-（示例数据模式：6 项数据形态差异已标 SKIP，接真实台账后应为 PASS）

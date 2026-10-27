@@ -78,6 +78,166 @@ CASES = [
     },
 ]
 
+def _make_pdf(path, text):
+    """生成一张极简 PDF（示例素材用）。"""
+    if os.path.exists(path):
+        return path
+    try:
+        import pymupdf
+    except ImportError:
+        try:
+            import fitz as pymupdf
+        except ImportError:
+            return ''
+    doc = pymupdf.open()
+    page = doc.new_page()
+    page.insert_text((72, 96), text, fontsize=11, fontname='china-s')
+    doc.save(path)
+    doc.close()
+    return path
+
+
+def _make_jpg(path):
+    """生成一张示意图片（示例签收凭证用）。"""
+    if os.path.exists(path):
+        return path
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        return ''
+    img = Image.new('RGB', (600, 800), '#F5F5F5')
+    d = ImageDraw.Draw(img)
+    d.rectangle([40, 40, 560, 760], outline='#999999', width=2)
+    d.text((70, 80), 'Delivery Receipt (sample)', fill='#333333')
+    d.text((70, 130), 'Tracking No.: 0000000000', fill='#333333')
+    d.line([70, 700, 400, 700], fill='#666666', width=1)
+    d.text((70, 710), 'Signature (sample)', fill='#666666')
+    img.save(path, quality=85)
+    return path
+
+
+def _make_sohan_template():
+    """生成一个匿名的所函 docx 模板（含占位符），让所函功能开箱可用。"""
+    p = os.path.join(HERE, 'templates', '所函模板.docx')
+    if os.path.exists(p):
+        return p
+    try:
+        from docx import Document
+        from docx.shared import Pt
+    except ImportError:
+        return ''
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    d = Document()
+    st = d.styles['Normal']
+    st.font.name = '宋体'
+    st.font.size = Pt(11)
+    d.add_paragraph('律 师 函').alignment = 1
+    d.add_paragraph('')
+    d.add_paragraph('致：{{ opponent }}')
+    d.add_paragraph('')
+    d.add_paragraph('本所接受 {{ client }} 的委托，指派 {{ lawyer }} 律师就 {{ cause }} '
+                    '一事，向贵方函告如下：')
+    d.add_paragraph('')
+    d.add_paragraph('一、{{ body }}')
+    d.add_paragraph('')
+    d.add_paragraph('二、请贵方于收到本函之日起 {{ days }} 日内予以答复并履行义务。')
+    d.add_paragraph('')
+    d.add_paragraph('特此函告。')
+    d.add_paragraph('')
+    d.add_paragraph('{{ firm }}')
+    d.add_paragraph('{{ date }}')
+    d.save(p)
+    return p
+
+
+COMMISSION_DOCS = {
+    '1、委托代理合同（简易版）.docx': [
+        ('委托代理合同', 'title'),
+        ('甲方（委托方）：{{ client }}', ''),
+        ('乙方（受托方）：{{ lawyer }}', ''),
+        ('乙方指派 {{ lawyer }} 为甲方与 {{ opponent }} {{ cause_d }} 纠纷一案的{{ stage }} 审阶段代理人。', ''),
+        ('代理权限：{{ auth_type }}授权。', ''),
+        ('律师代理费 {{ fee }} 元，于本合同签订之日起七日内支付。', ''),
+        ('本合同一式两份，双方各执一份，自签字盖章之日起生效。', ''),
+        ('甲方（签字）：____________　　乙方（盖章）：____________', ''),
+        ('　　　　　　　　年　　月　　日', ''),
+    ],
+    '2、授权委托书-民事.docx': [
+        ('授权委托书', 'title'),
+        ('委托人：{{ client }}', ''),
+        ('身份证号／统一社会信用代码：{{ client_id }}', ''),
+        ('住址：{{ address }}　　电话：{{ phone }}', ''),
+        ('受托人律师：{{ lawyer }}　执业证号：{{ lawyer_license }}', ''),
+        ('工作单位：{{ lawyer_addr }}　电话：{{ lawyer_phone }}', ''),
+        ('现委托上述受托人作为本人 {{ stage }} 审诉讼代理人，参与委托人与 {{ opponent }} {{ cause }}一案。', ''),
+        ('代理权限：{{ auth_type }} 授权。', ''),
+        ('委托人（签字）：____________', ''),
+        ('　　　　　　　　年　　月　　日', ''),
+    ],
+    '3、办案反馈表.docx': ('table', [
+        ['委托人', '{{ client }}'], ['案件类型', '{{ case_type }}'], ['案由', '{{ cause }}'],
+        ['承办律师', '{{ lawyer }}'], ['委托日期', '{{ commission_date }}'],
+        ['反馈内容', '（由承办律师填写）'],
+    ]),
+    '4、聘请律师提示.docx': [
+        ('聘请律师提示', 'title'),
+        ('一、律师依法独立执业，其意见基于事实与法律作出，不对案件结果作承诺。', ''),
+        ('二、委托人应如实陈述案情、提供真实完整的材料。', ''),
+        ('三、律师费、差旅费等按合同约定收取，另有约定的从其约定。', ''),
+        ('四、委托人有权解除委托；律师在委托人隐瞒重要事实等情形下有权辞去委托。', ''),
+        ('五、本案承办律师及联系方式以委托合同记载为准。', ''),
+        ('委托人（签字）：____________', ''),
+        ('　　　　　　　　年　　月　　日', ''),
+    ],
+    '5、送达地址确认书-某法院格式.docx': ('table', [
+        ['法院', '{{ court }}'], ['案由', '{{ cause }}'], ['当事人', '{{ client }}'],
+        ['证件号码', '{{ client_id }}'], ['送达地址', '{{ address }}'],
+        ['联系电话', '{{ phone }}'], ['代理人', '{{ lawyer }}'],
+        ['执业证号', '{{ lawyer_license }}'], ['代理人地址', '{{ lawyer_addr }}'],
+        ['代理人电话', '{{ lawyer_phone }}'],
+        ['确认意见', '上述地址为有效送达地址，因地址不准确导致文书未被接收的，由本人承担后果。'],
+    ]),
+    '6、账户确认表-某法院格式.docx': ('table', [
+        ['案号', '{{ case_no }}'], ['案由', '{{ cause }}'], ['收款人', '{{ payee }}'],
+        ['当事人', '{{ client }}'], ['联系电话', '{{ phone }}'],
+        ['开户银行', '{{ bank }}'], ['银行账号', '{{ account }}'],
+        ['确认意见', '上述账户为本案接收款项账户。'],
+    ]),
+}
+
+
+def _make_commission_templates():
+    """生成六件套骨架模板（含 {{变量}}），让委托手续功能开箱可用。
+    版式遵循国内民事委托材料的常见结构；正式使用请换成所内审定版本。"""
+    base = os.path.join(HERE, 'templates', '委托材料')
+    os.makedirs(base, exist_ok=True)
+    try:
+        from docx import Document
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+    except ImportError:
+        return 0
+    made = 0
+    for fname, spec in COMMISSION_DOCS.items():
+        p = os.path.join(base, fname)
+        if os.path.exists(p):
+            continue
+        d = Document()
+        if isinstance(spec, tuple) and spec[0] == 'table':
+            for row in spec[1]:
+                cells = d.add_table(rows=1, cols=2).rows[0].cells
+                cells[0].text, cells[1].text = row[0], row[1]
+        else:
+            for text, style in spec:
+                para = d.add_paragraph(text)
+                if style == 'title':
+                    para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    if para.runs:
+                        para.runs[0].bold = True
+        d.save(p)
+        made += 1
+    return made
+
+
 LETTERS = [
     {'序号': 1, '委托人': '甲公司', '发函日期': '2026-09-20', '承办律师': '张律师',
      '收函对象': '乙公司', '欠款金额（本金）': 86000, '案由': '买卖合同',
@@ -208,8 +368,41 @@ def main():
     print('案卷：', _make_case(archive, '民-A-25009_已结案示例', done=True))
     print('案卷：', _make_case(root, '执-26003_戊公司执行案', exec_case=True))
 
+    # 系列案总夹（总夹不对应单条台账行，页面上显示「系列案总夹」徽章）
+    series = os.path.join(root, '民-A-26004_甲公司系列案（2 件）')
+    for sub in ('1、甲公司与乙公司买卖合同纠纷', '2、甲公司与丙公司服务合同纠纷'):
+        _make_case(series, sub)
+
+    # 过程文件（留痕页的「归位」入口需要一个「错位」样本才会渲染）
+    _make_pdf(os.path.join(proc if 'proc' in dir() else os.path.join(
+        root, '民-A-26001_甲公司诉乙公司买卖合同纠纷_买卖', '08-过程文件'),
+        '财产保全申请书-错位示例.pdf'),
+        '财产保全申请书（示例，故意放错区：应放 02-法律文书）\n')
+    proc = os.path.join(root, '民-A-26001_甲公司诉乙公司买卖合同纠纷_买卖', '08-过程文件')
+    if os.path.isdir(proc):
+        with open(os.path.join(proc, '起草思路-v1.md'), 'w', encoding='utf-8') as f:
+            f.write('# 起草思路 v1（示例草稿）\n\n'
+                    '1. 争点：货款是否已到期、质量异议是否在合理期限提出。\n'
+                    '2. 证据：送货单 3 份、对账单 1 份、微信催款记录。\n'
+                    '3. 待补：对方签收凭证。\n')
+
+    # 业务线：律师函（含签收凭证 PDF/JPG）+ 散件待归类
+    letter_dir = os.path.join(biz, '律师函', '律师函-乙公司', '律师函及签收记录')
+    os.makedirs(letter_dir, exist_ok=True)
+    _make_pdf(os.path.join(letter_dir, '律师函-乙公司（签收）.pdf'),
+              '律师函（示例）\n\n致：乙公司\n\n本所接受甲公司委托，就贵司拖欠货款一事函告如下……\n')
+    _make_jpg(os.path.join(letter_dir, '签收凭证-快递单.jpg'))
+    scatter_dir = os.path.join(biz, '律师函', '待归类散件')
+    os.makedirs(scatter_dir, exist_ok=True)
+    _make_pdf(os.path.join(scatter_dir, '对账单-乙公司-2026-09.pdf'),
+              '对账单（示例）\n\n截至 2026-09-30，贵司欠款 86,000 元。\n')
+
     for d in ('律师函', '合同', '差旅发票'):
         os.makedirs(os.path.join(biz, d), exist_ok=True)
+
+    # 所函 + 委托六件套模板（匿名骨架版，让两个文书功能开箱可用）
+    _make_sohan_template()
+    print('委托模板：新增 %d 件' % _make_commission_templates())
 
     print('\n完成。下一步：')
     print('  python app.py --port 8899')

@@ -818,13 +818,13 @@ const PROBE = [
   '        const hit = box.innerHTML;',
   "        window.ledSearch('zzz绝不该命中');",
   '        const none = box.innerHTML;',
-  "        window.ledSearch('当事人丙');                        // 模拟中文上屏后的触发（input/keyup/compositionend）",
+  "        window.ledSearch('丙某');                            // 模拟中文上屏后的触发（input/keyup/compositionend）",
   '        const cn = box.innerHTML;',
   '        window.ledSearch("");',
   '        const back = box.innerHTML;',
   '        if (hit.length >= base.length) throw new Error("搜索未生效：结果没有变少");',
   '        if (!/没有匹配的台账行/.test(none)) throw new Error("搜索无结果时未显示空态");',
-  '        if (cn.length >= base.length || cn.indexOf("当事人丙") < 0) throw new Error("中文查询未收窄到目标行");',
+  '        if (cn.length >= base.length || cn.indexOf("丙某") < 0) throw new Error("中文查询未收窄到目标行");',
   '        if (back.length !== base.length) throw new Error("清空搜索后未还原全量");',
   "        if (!/\\d+ \\/ \\d+/.test(document.getElementById('ledCount').innerHTML)) throw new Error('计数未更新');",
   "        console.log('CHECK ledger 搜索 OK（全量 ' + base.length + ' → 海 ' + hit.length + ' → 空 ' + none.length + ' → 当事人丙 ' + cn.length + ' → 还原 ' + back.length + '）');",
@@ -1144,6 +1144,7 @@ DEMO_SKIPS = (
     '缺「签收」按钮',
     '散件页缺入库入口',
     '所函模板不可用',
+    '委托手续模板不可用',
     '详情页缺归位入口',
 )
 
