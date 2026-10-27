@@ -29,7 +29,7 @@ import urllib.error
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PY = r'<python>'
+PY = sys.executable
 PORT = 8813
 BASE = 'http://127.0.0.1:%d' % PORT
 OP = urllib.request.build_opener(urllib.request.ProxyHandler({}))   # 绕开环境代理
@@ -70,7 +70,7 @@ def make_fake_ledger():
     ws.title = '案件'
     ws.append(['案件编号', '案件', '委托人', '案件类别', '承办律师', '状态',
                '案号', '法院', '开庭时间', '当前进度', '标的额', '基础律师费', '进度日志'])
-    ws.append(['1', '福建委托人vs林国伟-买卖合同纠纷', '福建委托人饲料有限公司', '诉讼',
+    ws.append(['1', '福建闽兴vs林国伟-买卖合同纠纷', '福建闽兴饲料有限公司', '诉讼',
                '张律师', '执行中', '(2026)闽0203民初1016号', '思明法院', '', '08.01：已立案',
                '100000', '20000', '07.01：立案受理'])
     p = os.path.join(TMP, '合成台账.xlsx')

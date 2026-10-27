@@ -16,7 +16,7 @@ import urllib.parse
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PY = r'<python>'
+PY = sys.executable
 PORT = 8811
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 OP = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -89,7 +89,7 @@ def main():
             req('/api/tasks')[1], ensure_ascii=False))
 
         # 新增
-        s, d = req('/api/tasks', 'POST', {'title': '【API测试】阅卷', 'case_ref': 'A委托人\\三明委托人',
+        s, d = req('/api/tasks', 'POST', {'title': '【API测试】阅卷', 'case_ref': 'A闽兴\\三明闽兴',
                                           'priority': '紧急', 'due_date': '2026-09-01',
                                           'note': '回归用例', 'confirm': True})
         tid = d['task']['id']
@@ -117,7 +117,7 @@ def main():
         ck('按状态过滤', any(t['id'] == tid for t in d['tasks']))
         s, d = req('/api/tasks?' + urllib.parse.urlencode({'q': 'API测试'}))
         ck('关键词搜索', len(d['tasks']) >= 1)
-        s, d = req('/api/tasks?' + urllib.parse.urlencode({'case': 'A委托人\\三明委托人'}))
+        s, d = req('/api/tasks?' + urllib.parse.urlencode({'case': 'A闽兴\\三明闽兴'}))
         ck('按案件过滤', any(t['id'] == tid for t in d['tasks']))
 
         # 校验 → 400

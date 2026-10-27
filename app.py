@@ -680,7 +680,7 @@ def api_court_sms_download(body):
                                    'sdsin': link['sdsin']}, apply=confirm,
                                subdir='' if stash else '00-收件箱')
     r['stash'] = stash
-    # 批 74：目标为「分组夹」（下含 ≥2 个案件子夹）时提醒——防误落（实踩：当事人甲案误落 A委托人）
+    # 批 74：目标为「分组夹」（下含 ≥2 个案件子夹）时提醒——防误落（实踩：当事人甲案误落 A闽兴）
     if not stash and not r.get('error'):
         try:
             extra = [d for d in case_ops.case_dirs(p) if d not in case_ops.ALLOWED_DIRS]
@@ -2065,7 +2065,7 @@ def api_letter_sign_records(body):
     r"""查某债务人夹下的**签收记录**（批 46.2）。
 
     爸爸问「我原来律师函文件夹里存的 EMS 签收图怎么不见了」——其实一直在
-    （`委托人\律师函-福建委托人VS陈飞鹏\律师函及签收记录\` 下 5 对「函 PDF + 签收图」），
+    （`委托人\律师函-福建闽兴VS陈飞鹏\律师函及签收记录\` 下 5 对「函 PDF + 签收图」），
     只是页面没归类展示。本接口按**目录名含「签收」**跨层级捞出。
     """
     folder = str(body.get('folder') or '').strip()

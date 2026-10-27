@@ -36,9 +36,9 @@ RAWNAME = re.compile(r'^([0-9a-zA-Z\-\_\.]{6,}|微信图片_\d+.*|Screenshot_\d+
 
 
 def case_of(rel):
-    """案件口径：`A委托人\\` 下按**两层**计案（子夹即一案），避免同客户下两案被误并为同案"""
+    """案件口径：`A闽兴\\` 下按**两层**计案（子夹即一案），避免同客户下两案被误并为同案"""
     parts = rel.split(os.sep)
-    if parts[0] == 'A委托人' and len(parts) > 2:
+    if parts[0] == 'A闽兴' and len(parts) > 2:
         return parts[0] + os.sep + parts[1]
     return parts[0]
 
@@ -157,7 +157,7 @@ def render(root, files, groups, min_size, triage=False, ex=None):
     L = ['# 案件目录真重复分组（dup_scan.py 只读产物）', '',
          '> 扫描根：`%s`（%d 文件 ≥%dB 参与比对）' % (root, len(files), min_size),
          '> 去噪：排除 .json/.progress/.pyc 与小于阈值的文件',
-         '> 案件口径：`A委托人\\` 下按两层计案（子夹即一案）',
+         '> 案件口径：`A闽兴\\` 下按两层计案（子夹即一案）',
          '> **本报告不含任何删除/合并动作**——仅供人工甄别。', '',
          '## 汇总', '', '| 口径 | 组数 |', '|---|---|',
          '| 待处理·同案内重复 | %d |' % len(same),

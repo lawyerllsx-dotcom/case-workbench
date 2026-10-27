@@ -102,7 +102,7 @@ def read_existing_cases():
 
 
 def match_entity(case_row, entities):
-    """按委托人名匹配 entity_key（含简称兜底：'福建委托人' ⊂ '福建委托人饲料有限公司'）"""
+    """按委托人名匹配 entity_key（含简称兜底：'福建闽兴' ⊂ '福建闽兴饲料有限公司'）"""
     client = str(case_row.get('委托人') or '')
     for key, name in entities:
         if client and (client == name or client in name or name in client):

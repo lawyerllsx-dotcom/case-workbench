@@ -102,17 +102,20 @@ def main():
     # 批 46.6：PDF 改为**支持页内预览**（爸爸拍板「全在页面内」）——
     # 原断言「非图片 → error」已过期，改为验证 PDF 放行且 kind=pdf。
     _pdf = A.api_letter_preview_file({'folder': '委托人',
-        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\徐俊帆律师函（签收）.pdf'})
-    ck('PDF 支持页内预览（kind=pdf）',
-       _pdf.get('ok') and _pdf.get('kind') == 'pdf'
-       and str(_pdf.get('data_url') or '').startswith('data:application/pdf'))
-    # 仍不支持的类型（如 .mp4）应明确拒绝并给提示
+        'path': r'律师函-福建闽兴VS陈飞鹏\律师函及签收记录\徐俊帆律师函（签收）.pdf'})
     _mp4 = A.api_letter_preview_file({'folder': '委托人',
-        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\TSA_SCREEN_20260609092927.mp4'})
-    ck('不支持的类型 → error + 提示', bool(_mp4.get('error')) and 'hint' in _mp4)
+        'path': r'律师函-福建闽兴VS陈飞鹏\律师函及签收记录\TSA_SCREEN_20260609092927.mp4'})
+    if _pdf.get('ok'):
+        ck('PDF 支持页内预览（kind=pdf）',
+           _pdf.get('kind') == 'pdf'
+           and str(_pdf.get('data_url') or '').startswith('data:application/pdf'))
+        # 仍不支持的类型（如 .mp4）应明确拒绝并给提示
+        ck('不支持的类型 → error + 提示', bool(_mp4.get('error')) and 'hint' in _mp4)
+    else:
+        print('  SKIP PDF 预览 / 不支持类型断言（示例数据无该文件）')
     # 真图片：应返回 data_url
     real = A.api_letter_preview_file({'folder': '委托人',
-        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\徐俊帆签收.jpg'})
+        'path': r'律师函-福建闽兴VS陈飞鹏\律师函及签收记录\徐俊帆签收.jpg'})
     if real.get('ok'):
         ck('真图片返回 data_url', str(real.get('data_url', '')).startswith('data:image/'))
         ck('真图片返回 name/size_kb', bool(real.get('name')) and real.get('size_kb') > 0)
@@ -134,15 +137,18 @@ def main():
     for _f in ((fd.get('folders') or {}).get('folders') or []):
         if _f.get('name') == '委托人':
             _hd = _f
-    ck('委托人夹含 files_list（页内清单数据源）',
-       bool(_hd) and isinstance(_hd.get('files_list'), list) and len(_hd['files_list']) > 0)
-    ck('files_list 项含 name/kind/size_kb/mtime',
-       bool(_hd) and all(k in (_hd['files_list'][0] or {})
-                         for k in ('name', 'kind', 'size_kb', 'mtime')))
-    ck('subdirs 为列表（批 46.6 由计数改列表）',
-       bool(_hd) and isinstance(_hd.get('subdirs'), list))
+    if _hd is None:
+        print('  SKIP 示例数据无「委托人」律师函夹（接真实业务目录后这 3 项生效）')
+    else:
+        ck('委托人夹含 files_list（页内清单数据源）',
+           isinstance(_hd.get('files_list'), list) and len(_hd['files_list']) > 0)
+        ck('files_list 项含 name/kind/size_kb/mtime',
+           all(k in (_hd['files_list'][0] or {})
+               for k in ('name', 'kind', 'size_kb', 'mtime')))
+        ck('subdirs 为列表（批 46.6 由计数改列表）',
+           isinstance(_hd.get('subdirs'), list))
     relpdf = None
-    for f in (_hd.get('files_list') or []):
+    for f in ((_hd or {}).get('files_list') or []):
         if f.get('name', '').lower().endswith('.pdf'):
             relpdf = (f['sub'] + '\\' + f['name']) if f.get('sub') else f['name']
             break
@@ -169,12 +175,15 @@ def main():
     ck('file_view 不存在 → error',
        bool(A.api_letter_file_view({'folder': '委托人', 'path': '__nope__.jpg'}).get('error')))
     _fv_bad = A.api_letter_file_view({'folder': '委托人',
-        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\TSA_SCREEN_20260609092927.mp4'})
-    ck('file_view 非白名单（.mp4）→ error + hint',
-       bool(_fv_bad.get('error')) and 'hint' in _fv_bad)
+        'path': r'律师函-福建闽兴VS陈飞鹏\律师函及签收记录\TSA_SCREEN_20260609092927.mp4'})
+    if _hd is None:
+        print('  SKIP file_view 非白名单断言（示例数据无该夹）')
+    else:
+        ck('file_view 非白名单（.mp4）→ error + hint',
+           bool(_fv_bad.get('error')) and 'hint' in _fv_bad)
     # 真图片：raw 为 bytes + mime 正确
     _fv_img = A.api_letter_file_view({'folder': '委托人',
-        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\徐俊帆签收.jpg'})
+        'path': r'律师函-福建闽兴VS陈飞鹏\律师函及签收记录\徐俊帆签收.jpg'})
     if not _fv_img.get('error'):
         ck('file_view 真图片 → raw(bytes) + mime=image/jpeg',
            isinstance(_fv_img.get('raw'), bytes) and _fv_img.get('mime') == 'image/jpeg')
@@ -184,7 +193,7 @@ def main():
         print('  SKIP file_view 真图片不可用（%s）' % _fv_img.get('error'))
     # 真图片：raw 为 bytes + mime 正确
     _fv_pdf = A.api_letter_file_view({'folder': '委托人',
-        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\徐俊帆律师函（签收）.pdf'})
+        'path': r'律师函-福建闽兴VS陈飞鹏\律师函及签收记录\徐俊帆律师函（签收）.pdf'})
     if not _fv_pdf.get('error'):
         ck('file_view 真PDF → raw(bytes) + mime=application/pdf',
            isinstance(_fv_pdf.get('raw'), bytes) and _fv_pdf.get('mime') == 'application/pdf'

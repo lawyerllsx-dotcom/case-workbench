@@ -136,6 +136,11 @@
     "script": ""
   },
   "notification": {
-    "bubble_port": 7777
+    "bubble_port": 7777,
+    "webhook_url": ""
+  },
+  "wiki": {
+    "root": "",
+    "case_dir": "案件"
   }
 }

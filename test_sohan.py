@@ -27,6 +27,10 @@ def ck(name, cond):
 
 import sohan_ops  # noqa: E402
 
+if not sohan_ops.template_ok()[0]:
+    print('SKIP 所函模板未提供（templates/所函模板.docx）——放自己的模板后本测试生效')
+    raise SystemExit(0)
+
 TMP = tempfile.mkdtemp(prefix='p39a_api_')
 
 # ============================================ ① 模板与计划（离线，不起服务）

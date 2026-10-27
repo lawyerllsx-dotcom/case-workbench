@@ -181,9 +181,9 @@ def main():
         SMS_4195 = ('【连江县人民法院】张律师你好，请查收（2026）闽0122民初4195号案件中被告民事上诉状。'
                     '点击查阅：https://zxfw.court.gov.cn/zxfw/#/pagesSd/sd/index?qdbh=Q4195&sdbh=S4195&sdsin=T4195')
         A.case_ops.ledger_case_rows = lambda: [
-            {'sheet': '案件', 'row': 11, '案件': '福州委托人vs当事人甲、吴群华、许明华、吴伟腾-买卖合同纠纷',
+            {'sheet': '案件', 'row': 11, '案件': '福州闽兴vs当事人甲、吴群华、许明华、吴伟腾-买卖合同纠纷',
              '案号': '（2026）闽0122 民初4195号\n（2026）闽0122执保523号',
-             '委托人': '福州委托人饲料有限公司', '案件类别': '民事', '状态': '已立案', '法院': '连江法院',
+             '委托人': '福州闽兴饲料有限公司', '案件类别': '民事', '状态': '已立案', '法院': '连江法院',
              '开庭时间': '', '当前进度': '', '进度日志': '', '承办律师': '', '标的额': None, '基础律师费': None}]
         A.case_ops.folder_by_ledger_row = lambda rows=None: {('案件', 11): cp}
         r = A.api_court_sms_preview({'sms': SMS_4195})
@@ -193,21 +193,21 @@ def main():
 
         print('=== ④-bis 批 71：嵌套案件夹映射 + 案件名兜底（夹查找实踩回归） ===')
         A.case_ops.folder_by_ledger_row = orig_fblr           # 用真实现（case_root 仍打桩到 tmp）
-        _nested = os.path.join(tmp, 'A委托人', '民-A-26012_福建委托人VS新余钦丰祥等_买卖合同纠纷')
+        _nested = os.path.join(tmp, 'A闽兴', '民-A-26012_福建闽兴VS新余钦丰祥等_买卖合同纠纷')
         os.makedirs(os.path.join(_nested, '00-收件箱'), exist_ok=True)
         A.case_ops.ledger_case_rows = lambda: [
             {'sheet': '案件', 'row': 12,
-             '案件': '福建委托人vs新余钦丰祥农业开发公司、孔祥斌、何红英、孔令钦-买卖合同纠纷',
-             '案号': '（2026）闽 0203 民初 1234 号', '委托人': '福建委托人饲料有限公司',
+             '案件': '福建闽兴vs新余钦丰祥农业开发公司、孔祥斌、何红英、孔令钦-买卖合同纠纷',
+             '案号': '（2026）闽 0203 民初 1234 号', '委托人': '福建闽兴饲料有限公司',
              '案件类别': '诉讼', '状态': '已立案', '法院': '', '开庭时间': '', '当前进度': '',
              '进度日志': '', '承办律师': '', '标的额': None, '基础律师费': None}]
         r = A.api_court_sms_preview({'sms': SMS_OK})
         ck('嵌套夹（分组夹下）映射到建议（批71 修复点）',
-           (r['match'] or {}).get('suggest') == '民-A-26012_福建委托人VS新余钦丰祥等_买卖合同纠纷')
+           (r['match'] or {}).get('suggest') == '民-A-26012_福建闽兴VS新余钦丰祥等_买卖合同纠纷')
         A.case_ops.folder_by_ledger_row = lambda rows=None: {}  # 强制映射缺失 → 走兜底
         r = A.api_court_sms_preview({'sms': SMS_OK})
         ck('映射缺失 → 案件名兜底找夹（批71 兜底通道）',
-           (r['match'] or {}).get('suggest') == '民-A-26012_福建委托人VS新余钦丰祥等_买卖合同纠纷')
+           (r['match'] or {}).get('suggest') == '民-A-26012_福建闽兴VS新余钦丰祥等_买卖合同纠纷')
 
         print('=== ⑤ download dry-run / apply（批 72：下载即归位） ===')
         A.case_ops.ledger_case_rows = lambda: []
@@ -267,10 +267,10 @@ def main():
         r = A.api_court_sms_download({'case': '系列甲/../子案一', 'link': LINK_OK, 'confirm': False})
         ck('段内 .. → 拒', 'error' in r)
 
-        print('=== ⑤-ter 批 74：分组夹目标提醒（防误落——A委托人 实踩） ===')
-        os.makedirs(os.path.join(tmp, 'A委托人', '民-A-26013_福州委托人VS当事人甲等_买卖合同纠纷',
+        print('=== ⑤-ter 批 74：分组夹目标提醒（防误落——A闽兴 实踩） ===')
+        os.makedirs(os.path.join(tmp, 'A闽兴', '民-A-26013_福州闽兴VS当事人甲等_买卖合同纠纷',
                                  '00-收件箱'), exist_ok=True)
-        r = A.api_court_sms_download({'case': 'A委托人', 'link': LINK_OK, 'confirm': False})
+        r = A.api_court_sms_download({'case': 'A闽兴', 'link': LINK_OK, 'confirm': False})
         ck('分组夹目标 dry-run → warn 提醒（含子案数与改选指引）',
            r.get('dry_run') is True and '分组夹' in (r.get('warn') or '')
            and '子案项' in (r.get('warn') or ''))

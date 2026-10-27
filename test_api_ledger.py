@@ -20,7 +20,7 @@ import urllib.error
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PY = r'<python>'
+PY = sys.executable
 PORT = 8812
 BASE = 'http://127.0.0.1:%d' % PORT
 OP = urllib.request.build_opener(urllib.request.ProxyHandler({}))   # 绕开环境代理

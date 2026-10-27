@@ -536,7 +536,7 @@ const PROBE = [
   "        if (sm.date_blank !== true) throw new Error('所函 meta 未声明日期留空');",
   "        // 预览渲染：给一组必填值，必须出「改前/改后」对照且不落盘（GET 只读）",
   "        const q = 'court=' + encodeURIComponent('厦门市思明区人民法院')",
-  "          + '&client=' + encodeURIComponent('福建委托人饲料有限公司')",
+  "          + '&client=' + encodeURIComponent('福建闽兴饲料有限公司')",
   "          + '&stage=' + encodeURIComponent('一审')",
   "          + '&opponent=' + encodeURIComponent('当事人丙')",
   "          + '&cause=' + encodeURIComponent('买卖合同纠纷');",
@@ -1354,7 +1354,7 @@ def main():
                            'auth_type': '特别', 'case_type': '民事'}}),
             '/api/sohan/plan': get(port, '/api/sohan/plan?' + urllib.parse.urlencode({
                 'case_folder': os.path.join(case_ops.case_root(), first) if first else '',
-                'court': '厦门市思明区人民法院', 'client': '福建委托人饲料有限公司',
+                'court': '厦门市思明区人民法院', 'client': '福建闽兴饲料有限公司',
                 'stage': '一审', 'opponent': '当事人丙', 'cause': '买卖合同纠纷',
             })),
             '/api/schedule': get(port, '/api/schedule'),

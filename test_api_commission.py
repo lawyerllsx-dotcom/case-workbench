@@ -34,6 +34,12 @@ def ck(name, cond):
 
 
 def main():
+    _tpl = os.path.join(HERE, 'templates', '委托材料')
+    _n = len([f for f in os.listdir(_tpl) if f.endswith('.docx') and not f.startswith('_')]) \
+        if os.path.isdir(_tpl) else 0
+    if _n < 6:
+        print('SKIP 委托材料模板未提供（templates/委托材料/ 需 6 件 docx）——放入自己的模板后本测试生效')
+        return 0
     import app as A
     import docx
 

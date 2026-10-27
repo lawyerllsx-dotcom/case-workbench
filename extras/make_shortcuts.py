@@ -23,11 +23,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # 启动器解释器（2026-09-13 起第一位 = 系统 Python312 pythonw：**有 tkinter**，
 # launch_workbench v2 的品牌启动窗需要；venv 精简版没有 tkinter，作降级候选）
 PYW_CANDIDATES = [
-    r'<pythonw>',
-    r'<pythonw>',
+    sys.executable.replace('python.exe', 'pythonw.exe'),
+    sys.executable,
 ]
 PYW = next((p for p in PYW_CANDIDATES if os.path.isfile(p)), PYW_CANDIDATES[0])
-DESK = r'<用户目录>\Desktop'
+DESK = os.path.join(os.path.expanduser('~'), 'Desktop')
 ICO = os.path.join(HERE, '法律工作台.ico')
 PS1 = os.path.join(HERE, '_mk_shortcuts.ps1')
 REPORT = os.path.join(HERE, '_mk_shortcuts_report.txt')

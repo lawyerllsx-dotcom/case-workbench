@@ -429,10 +429,10 @@ def selftest():
     tmp = os.path.join(tempfile.mkdtemp(prefix='tasks_selftest_'), 'wb.db')
     try:
         ck('初始为空', stats(tmp)['total'] == 0)
-        a = add_task('阅卷：三明委托人案材料', case_ref='A委托人\\三明委托人', priority='重要',
+        a = add_task('阅卷：三明闽兴案材料', case_ref='A闽兴\\三明闽兴', priority='重要',
                      due_date=(date.today() - timedelta(days=1)).strftime('%Y-%m-%d'),
                      path=tmp, do_backup=False)
-        b = add_task('写起诉状', case_ref='A委托人\\三明委托人', priority='紧急',
+        b = add_task('写起诉状', case_ref='A闽兴\\三明闽兴', priority='紧急',
                      due_date=(date.today() + timedelta(days=3)).strftime('%Y-%m-%d'),
                      path=tmp, do_backup=False)
         add_task('交差旅票', path=tmp, do_backup=False)               # 无期限
@@ -456,7 +456,7 @@ def selftest():
         # 过滤
         ck('按状态筛', len(list_tasks(status='进行中', path=tmp)) == 1)
         ck('按关键词筛', len(list_tasks(q='起诉', path=tmp)) == 1)
-        ck('按案件筛', len(list_tasks(case='A委托人\\三明委托人', path=tmp)) == 2)
+        ck('按案件筛', len(list_tasks(case='A闽兴\\三明闽兴', path=tmp)) == 2)
         ck('due=overdue 筛', len(list_tasks(due='overdue', path=tmp)) == 1)
         ck('排序：紧急优先', list_tasks(path=tmp)[0]['id'] == b['id'])
 

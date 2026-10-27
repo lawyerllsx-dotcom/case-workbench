@@ -548,7 +548,7 @@ function caseLedgerBriefHtml(l) {
 function subcasesHtml(subs) {
   if (!subs || !subs.length) return '';
   return `<h2 style="margin-top:12px">子案件夹（${subs.length}）</h2>
-    <div class="hint">系列案总夹下的各个子案（如「A委托人」这类客户总夹）。</div>
+    <div class="hint">系列案总夹下的各个子案（如「A闽兴」这类客户总夹）。</div>
     <table><tr><th>子案件夹</th><th>文件</th><th>00-收件箱</th><th>说明</th><th>台账</th></tr>` +
     subs.map(s => `<tr><td>${esc(s.name)}</td>
       <td>${s.files}</td>
@@ -2155,7 +2155,7 @@ async function viewSohan() {
     + '<label>致送法院 <span class="red">*</span></label>'
     + '<input id="sh_court" placeholder="如：厦门市思明区人民法院">'
     + '<label>委托人 <span class="red">*</span></label>'
-    + '<input id="sh_client" placeholder="如：福建委托人饲料有限公司">'
+    + '<input id="sh_client" placeholder="如：福建闽兴饲料有限公司">'
     + '<label>承办律师</label>'
     + `<input id="sh_lawyer" value="${esc(m.default_lawyer || '')}">`
     + '<label>诉讼阶段</label>'

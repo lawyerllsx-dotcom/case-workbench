@@ -43,9 +43,9 @@ VERSION = '1.0.0'
 # 工作台自己的 AUMID（无空格、符合 Windows 约定）
 AUMID = 'Tencent.LegalWorkbench'
 LNK_NAME = '法律工作台.lnk'
-TARGET = r'<pythonw>'
-ARGS = r'"<项目目录>\app.py" --idle-exit 0'
-WORKDIR = r'<项目目录>'
+WORKDIR = os.path.dirname(os.path.abspath(__file__))
+TARGET = sys.executable.replace('python.exe', 'pythonw.exe')
+ARGS = '"%s" --idle-exit 0' % os.path.join(WORKDIR, 'app.py')
 ICON = os.path.join(WORKDIR, '法律工作台.ico')
 DESC = '法律工作台'
 

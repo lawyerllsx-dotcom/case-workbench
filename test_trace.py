@@ -191,16 +191,18 @@ ck('错位体检只读（文件未动）',
 sw3 = trace_ops.sweep(D1)
 ck('体检含 misplace 字段', ('misplace' in sw3) and sw3['misplace']['total'] >= 1)
 
-fn = trace_ops._func_dir_of('A委托人/5.6揭阳委托人vs林癸涵/08-过程文件')
+fn = trace_ops._func_dir_of('A闽兴/5.6揭阳闽兴vs林癸涵/08-过程文件')
 ck('职能目录定位：跳过案卷名取到 08-过程文件', fn == '08-过程文件', fn)
 fn2 = trace_ops._func_dir_of('仲-厦门向上沟通VS厦门沧珩_服务合同纠纷/02-法律文书')
 ck('职能目录定位：首段即职能目录', fn2 == '02-法律文书', fn2)
 
 print('=== 7. 真数据零接触核验 ===')
-real = r'D:\案件\你的在办案卷'
+# 开源版：案卷根由配置决定，默认指向 demo。若配置到了真实案卷，则核验其未被本次测试写入。
+real = os.environ.get('CASE_OPS_ROOT') or ''
+_ok_real = (not real) or (not os.path.isdir(real)) or \
+           (not os.path.isdir(os.path.join(real, '__trace_test__')))
 ck('夹具在临时目录（未用真案卷根）', trace_ops.case_root() == CASE_ROOT)
-ck('真案卷根未被本次写入（只读探测）',
-   os.path.isdir(real) and not os.path.isdir(os.path.join(real, '__trace_test__')))
+ck('真案卷根未被本次写入（只读探测）', _ok_real)
 
 print()
 print('%d/%d 通过' % (OK, OK + FAIL))

@@ -853,7 +853,7 @@ ANALYZE_FORMAT = (
     "\"change\":\"new\"|\"updated\"|\"same\"}，\n"
     "有效提醒最多 %d 条，按优先级排序。宁可少报不错报，日期/案号不得编造。\n"
     "【案名硬规则】每条 text 必须以案件短名开头（如'当事人甲案：开庭改至10月8日'）。\n"
-    "短名取'案件'列的对方当事人或核心主体（'福州委托人vs当事人甲、吴群华...'→'当事人甲案'；\n"
+    "短名取'案件'列的对方当事人或核心主体（'福州闽兴vs当事人甲、吴群华...'→'当事人甲案'；\n"
     "'厦门中非世野野生动物园'→'中非世野案'），禁止只写案号尾号（如'1016号案'）；"
     "45 字限额含案名。\n" % LLM_MAX_REMINDERS
 )
@@ -1145,7 +1145,7 @@ def selftest():
     ws.cell(row=1, column=1, value='序号')
     ws.cell(row=4, column=1, value=1)
     ws.cell(row=4, column=2, value='(2026)闽01民初1号')
-    ws.cell(row=4, column=3, value='福州委托人vs当事人甲')
+    ws.cell(row=4, column=3, value='福州闽兴vs当事人甲')
     ws.cell(row=4, column=8, value='2026-10-08')
     ws.cell(row=4, column=9, value='跟进 9.20 联系法官')
     ws.cell(row=4, column=11, value='待开庭')

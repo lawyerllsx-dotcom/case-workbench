@@ -48,7 +48,6 @@ SERVICE_PY_CANDIDATES = [
     sys.executable,
     os.path.join(_HERE, '.venv', 'Scripts', 'pythonw.exe'),
     os.path.join(_HERE, '.venv', 'Scripts', 'python.exe'),
-    r'<pythonw>',
 ]
 EDGE_CANDIDATES = [
     r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',

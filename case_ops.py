@@ -126,7 +126,7 @@ def _guard_in_case(case_dir, allow_sub=False):
 # ---------------------------------------------------------------- 命名规范 v2
 
 def case_folder_name(case_no, client, opponent, cause):
-    """民-A-26016_委托人VS对方_案由"""
+    """民-A-26016_闽兴VS对方_案由"""
     case_no = (case_no or '').strip()
     if not CASE_NO_RE.match(case_no):
         raise ValueError('案件编号格式应为 民-A-26NNN / 执-… / 仲-…（收到 %r）' % case_no)
@@ -497,7 +497,7 @@ def inbox_guide_text(folder, case_no, client, opponent, cause, case_type='诉讼
         buf.append('> 所属系列案总夹：`%s`（本页只管**本子案**；新材料进本夹 `00-收件箱`）' % parent)
     _nm = row.get('案件') or ''
     if not _nm:
-        # 拆不出「谁 VS 谁」时（如 '三明委托人'）直接用文件夹名，不硬拼成「X与Y」
+        # 拆不出「谁 VS 谁」时（如 '三明闽兴'）直接用文件夹名，不硬拼成「X与Y」
         _nm = ('%s与%s%s' % (client, opponent, cause)).strip('与-') if opponent else ''
     buf.append('> 案件：%s' % (_nm or folder))
     buf.append('> 所内编号：%s ｜ 类别：%s ｜ 案号：%s'
@@ -518,7 +518,7 @@ def inbox_guide_text(folder, case_no, client, opponent, cause, case_type='诉讼
 
     if series:
         buf.append('## ⚠️ 这是「系列案」总夹\n')
-        buf.append('本夹下面每个子文件夹 = 一个独立案件（如 `5.6福建委托人VS林国伟`）。')
+        buf.append('本夹下面每个子文件夹 = 一个独立案件（如 `5.6福建闽兴VS林国伟`）。')
         buf.append('新材料请丢进**对应案件子夹**的 `00-收件箱`；还没定是哪个案子的，先丢本夹根级 `00-收件箱`，')
         buf.append('在工作台「收件箱入库」时注明属于哪个案子，别直接塞进某个子夹的正文目录。\n')
 
@@ -613,7 +613,7 @@ def build_guide_text(case_dir, exec_case=False, row=None, parent=None):
 def plan_guides(root=None, names=None, subs=None):
     """批量补件方案（只读，不写盘）：每个顶层案件夹一份《材料怎么放》。
 
-    subs：需额外展开到「子案件夹」的**系列案总夹名**列表（如 `['A委托人']`）。
+    subs：需额外展开到「子案件夹」的**系列案总夹名**列表（如 `['A闽兴']`）。
       None / 空 = 只扫第一层案件夹（原行为）。
       展开出的子夹：`level=2`、`key='总夹/子夹'`、`parent=总夹名`（批 21 加）。
     """
@@ -649,7 +649,7 @@ def plan_guides(root=None, names=None, subs=None):
 
     for name in names:
         rel = name.replace('\\', '/').strip('/')
-        if '/' in rel:                                        # 允许直接点名子夹：'A委托人/某子夹'
+        if '/' in rel:                                        # 允许直接点名子夹：'A闽兴/某子夹'
             parent, leaf = rel.rsplit('/', 1)
             p = os.path.join(root, parent, leaf)
             if os.path.isdir(p):
@@ -847,14 +847,14 @@ def biz_root():
 # 绝不移动、绝不改名、绝不删除任何文件。
 SCATTER_DIRS = ['律师函', '合同', '差旅发票', '所函', '介绍信', '判决书', '接收到的文件']
 #: **公司字号 / 通用公司名**：不能单独作为「归属线索」
-#: ⚠️ 2026-09-18 实踩：拿「福建委托人」当线索，把 `徐俊帆`/`陈飞鹏`/`林海明` 等
+#: ⚠️ 2026-09-18 实踩：拿「福建闽兴」当线索，把 `徐俊帆`/`陈飞鹏`/`林海明` 等
 #: **批量催收对象**误挂到「当事人丙案」（15 件假阳性）——
 #: 公司字号是**委托人/服务方名称**，**不是区分当事人的特征**。
 SCATTER_CORP_TOKENS = (
-    '委托人', '某公司', '云通', '中北', '新视', '向上', '恒投', '世野', '佳联',
+    '委托人', '闽兴', '某公司', '云通', '中北', '新视', '向上', '恒投', '世野', '佳联',
     '优卓', '源卓', '艺千', '速煦', '京邦达', '超越', '饲料', '生物', '科技',
     '有限', '公司', '股份', '集团', '实业', '供应链', '律师事务所',
-    # 批 39g 补：**地名 + 组织形态**也算公司要素（实踩『福州委托人饲料有限公司』穿透）
+    # 批 39g 补：**地名 + 组织形态**也算公司要素（实踩『福州闽兴饲料有限公司』穿透）
     #   判定 ④ 去字号后若只剩地名（「福州」「揭阳」），仍无当事人区分度。
     '福州', '厦门', '泉州', '漳州', '揭阳', '南通', '三明', '盐城', '淮安',
     '龙海', '海沧', '翔安', '福建', '广东', '江苏', '安徽', '湖北',
@@ -872,7 +872,7 @@ SCATTER_KIND = {                     # 目录 → (业务类型, 说明)
 }
 # 散件文件名里的通用词——散件页归属判定必须剔除它们，否则「合同」会把所有合同
 # 挂到所有含「合同」的案子上（2026-09-17 首版实踩：三丰云通的顾问合同被挂到
-# 「福州委托人」「淮安海龙」）。剔除后只留当事人/标的类片段。
+# 「福州闽兴」「淮安海龙」）。剔除后只留当事人/标的类片段。
 SCATTER_GENERIC = set(INVOICE_STOPWORDS) | {
     '合同', '协议', '材料', '文件', '文档', '清单', '目录', '一览表', '确认书', '委托书',
     '授权', '委托', '代理', '律师函', '律师', '函件', '介绍信', '判决书', '裁定书',
@@ -1179,7 +1179,7 @@ def _case_folders_for_match():
     """案卷夹名池（供散件匹配的**第二匹配源**）—— **只收「案子夹」**
 
     ⚠️ 2026-09-18 批 39c：实测台账只 27 行，而案卷有 **9 个案子只在案卷不在台账**
-    （`福州委托人vs霍山`、`民-A-黎林培VS安徽速煦供应链`…）→ 只看台账会**漏认**。
+    （`福州闽兴vs霍山`、`民-A-黎林培VS安徽速煦供应链`…）→ 只看台账会**漏认**。
 
     只收「像案子的」：含「VS/vs/诉/纠纷/执行/异议」等案件特征，
     或位于客户层下且不是职能目录。**职能目录一律排除**（它们不是案子）。
@@ -1196,7 +1196,7 @@ def _case_folders_for_match():
             continue
         if d in _FUNC_DIRS:
             continue
-        # 一级：找案子的那几个「客户总夹」（如 `A委托人`）里的**案子夹**
+        # 一级：找案子的那几个「客户总夹」（如 `A闽兴`）里的**案子夹**
         #   ⚠️ 2026-09-18 实测再收窄：**二级里几乎全是职能目录/材料夹**
         #   （`09-财产查控`/`10-处置分配`/`提交法院的证据`/`21、2025年当事人丁授信资料`/
         #   `要准备的材料`）→ 全收会把池子污染成 175 条、弱命中稀释强命中（31→24 退步）。
@@ -1209,7 +1209,7 @@ def _case_folders_for_match():
             subs = []
         has_case_subs = any(CASE_LIKE.search(x) for x in subs)
         if has_case_subs:
-            # 「客户总夹」型（A委托人 / 盐城海维生物…）→ 收它下面的案子夹
+            # 「客户总夹」型（A闽兴 / 盐城海维生物…）→ 收它下面的案子夹
             out.append((d, d))          # 总夹本身也收（供粗匹配）
             for d2 in subs:
                 if d2 in _FUNC_DIRS or not CASE_LIKE.search(d2):
@@ -1229,12 +1229,12 @@ def scatter_match(fname, rows, folder_name='', folder_pool=None):
       ① **当事人级命中**：文件名去掉通用词后，剩下的中文片段里有 ≥3 字连续出现在台账
          案件名/委托人里（长片段几乎不可能是巧合）；
       ①b **案卷夹名命中**（2026-09-18 新增）：同上，但匹配源是**案卷夹名**
-         （台账没有但案卷有的案子，如 `福州委托人vs霍山`）；
+         （台账没有但案卷有的案子，如 `福州闽兴vs霍山`）；
       ② **当事人名全等**：文件名或所在子夹名里的 2-4 字中文人名（非通用词）全等于台账
          案件名中的当事人片段；
       ③ 都未中 → 认不出（明确说「无足够线索」，不硬套）。
 
-    ⚠️ **公司字号不作为线索**（见 SCATTER_CORP_TOKENS）——否则「福建委托人」会把
+    ⚠️ **公司字号不作为线索**（见 SCATTER_CORP_TOKENS）——否则「福建闽兴」会把
     批量催收对象全挂到某一个案子上。
 
     与 `match_invoice` 的区别：不采纳「文件名含『合同』」这类 1 个通用 2-gram 的弱命中。
@@ -1291,7 +1291,7 @@ def scatter_match(fname, rows, folder_name='', folder_pool=None):
             if piece[i:i + 2] in _GENERIC_BIGRAMS:
                 return True
         # ④ **公司字号不算线索**（2026-09-18 批 39c 补）
-        #    实踩：用「福建委托人」当线索，把「徐俊帆」「陈飞鹏」「林海明」等
+        #    实踩：用「福建闽兴」当线索，把「徐俊帆」「陈飞鹏」「林海明」等
         #    **批量催收对象**误挂到「当事人丙案」（15 件假阳性）。
         #    公司字号是**委托人/服务方名称**，**不是区分当事人的特征**。
         #    判定：片段「全是公司字号拼成的」（去掉公司字号后不剩 ≥2 字）→ 无身份意义。
@@ -1303,7 +1303,7 @@ def scatter_match(fname, rows, folder_name='', folder_pool=None):
         _p = piece
         for _c in SCATTER_CORP_TOKENS:
             _p = _p.replace(_c, '')
-        # ⚠️ 批 39g 实踩：阈值 2 太松 ——『福州委托人饲料有限公司』去字号后剩「福州」
+        # ⚠️ 批 39g 实踩：阈值 2 太松 ——『福州闽兴饲料有限公司』去字号后剩「福州」
         #    正好 2 字，判定通过 → 把「海王鳗业」的对账单挂到「朱泽洪案」。
         #    公司全名去掉要素后**剩不到 3 字**即无当事人区分度（真实当事人名多为 2-3 字）。
         if len(_p) < 3:
@@ -1334,8 +1334,8 @@ def scatter_match(fname, rows, folder_name='', folder_pool=None):
         if best < 3:
             for seg in segs:
                 # ⚠️ 批 39g 三修：豁免条件必须是「**片段 == 夹名**」（夹名本身即当事人），
-                #    不能放宽到「片段 ⊂ 夹名」——后者会把 `律师函-福建委托人VS陈飞鹏`
-                #    整名放行，其中「福建委托人」要素穿透 → 假阳性复现。
+                #    不能放宽到「片段 ⊂ 夹名」——后者会把 `律师函-福建闽兴VS陈飞鹏`
+                #    整名放行，其中「福建闽兴」要素穿透 → 假阳性复现。
                 if 2 <= len(seg) <= 4 and seg in hay and not _is_generic_piece(
                         seg, from_folder=(folder_name == seg)):
                     if best < len(seg):
@@ -1403,7 +1403,7 @@ def iter_case_folders(max_depth=2):
 
     ⚠️ 2026-09-18 批 39c 实测：真实案卷有**两级**结构——
       根下既有 `仲-厦门向上沟通VS厦门沧珩_…`（一级），
-      也有 `A委托人/民-26003-福州委托人饲料…`（二级）。
+      也有 `A闽兴/民-26003-福州闽兴饲料…`（二级）。
     只扫一层会导致台账案件名认不到夹（人工指定也失败）。
 
     判定「是案夹」＝ 该目录含编号子夹（00-收件箱 / 01-委托手续…）或 `_材料怎么放.md`。
@@ -1506,7 +1506,7 @@ def folder_by_ledger_row(rows=None):
         except Exception:                                     # noqa: BLE001
             rows = []
     # 批 71：改扫**多级**案件夹（iter_case_folders，批 39c 语义）——原只扫一级，
-    # 分组夹（如 A委托人）下的嵌套案件夹全部漏映射，法院短信夹查找因此报「没找到对应案件夹」。
+    # 分组夹（如 A闽兴）下的嵌套案件夹全部漏映射，法院短信夹查找因此报「没找到对应案件夹」。
     for p in iter_case_folders():
         try:
             mt = match_case_ledger(os.path.basename(p), rows=rows).get('matched')
@@ -2654,27 +2654,27 @@ def selftest():
 
     # ---- 批 71：嵌套案件夹映射 + 复合当事人核心词 + 案件名找夹细化
     # （2026-10-15 实踩：法院短信解析「台账命中但没找到对应案件夹」——夹其实存在，查找三处短板）
-    _grp71 = os.path.join(tmp, 'A委托人')
-    _nested71 = os.path.join(_grp71, '民-A-26012_福建委托人VS新余钦丰祥等_买卖合同纠纷')
+    _grp71 = os.path.join(tmp, 'A闽兴')
+    _nested71 = os.path.join(_grp71, '民-A-26012_福建闽兴VS新余钦丰祥等_买卖合同纠纷')
     os.makedirs(os.path.join(_nested71, INBOX), exist_ok=True)
     _rows71 = [{'sheet': '案件', 'row': 12, '案号': '（2026）闽 0625 民初 2225 号',
-                '案件': '福建委托人vs新余钦丰祥农业开发公司、孔祥斌、何红英、孔令钦-买卖合同纠纷',
-                '委托人': '福建委托人饲料有限公司', '案件类别': '诉讼', '状态': '诉讼中',
+                '案件': '福建闽兴vs新余钦丰祥农业开发公司、孔祥斌、何红英、孔令钦-买卖合同纠纷',
+                '委托人': '福建闽兴饲料有限公司', '案件类别': '诉讼', '状态': '诉讼中',
                 '法院': '', '开庭时间': '', '当前进度': '', '进度日志': '',
                 '承办律师': '', '标的额': None, '基础律师费': None}]
     _f71 = folder_by_ledger_row(_rows71)
     chk('批71：嵌套案件夹进映射（一级分组夹不挡）', _f71.get(('案件', 12)) == _nested71)
-    _m71 = match_case_ledger('民-A-26012_福建委托人VS新余钦丰祥等_买卖合同纠纷', _rows71)
+    _m71 = match_case_ledger('民-A-26012_福建闽兴VS新余钦丰祥等_买卖合同纠纷', _rows71)
     chk('批71：复合当事人核心词命中且唯一（新余钦丰祥）',
         bool(_m71.get('matched')) and _m71['matched']['row'] == 12 and _m71['top_score'] >= 3)
     chk('批71：案由剥离——案件名找夹命中正确夹（不被公共案由带偏）',
         folder_by_case_name(_rows71[0]['案件']) == _nested71)
-    _n2a = os.path.join(_grp71, '民-A-26090_福建委托人VS某某甲等_买卖合同纠纷')
-    _n2b = os.path.join(_grp71, '民-A-26091_福建委托人VS某某乙等_买卖合同纠纷')
+    _n2a = os.path.join(_grp71, '民-A-26090_福建闽兴VS某某甲等_买卖合同纠纷')
+    _n2b = os.path.join(_grp71, '民-A-26091_福建闽兴VS某某乙等_买卖合同纠纷')
     os.makedirs(os.path.join(_n2a, INBOX), exist_ok=True)
     os.makedirs(os.path.join(_n2b, INBOX), exist_ok=True)
     chk('批71：并列无区分度 → 拒认不猜',
-        folder_by_case_name('福建委托人vs某某甲、某某乙-买卖合同纠纷') == '')
+        folder_by_case_name('福建闽兴vs某某甲、某某乙-买卖合同纠纷') == '')
     # 嵌套「总夹/子案件夹」的收件箱入库（下载→归位链，批 71）
     _pi71 = plan_intake(_nested71, allow_sub=True)
     chk('批71：嵌套子案件夹可扫描（allow_sub）', _pi71['inbox_exists'] is True)
@@ -2739,13 +2739,13 @@ def main():
     p_g = sub.add_parser('guides', help='给既有案件夹补《材料怎么放》（纯新增，不覆盖）')
     p_g.add_argument('--case', default=None, help='只处理指定夹（默认全部）')
     p_g.add_argument('--subs', default=None,
-                     help='展开到子案件夹的系列案总夹名（逗号分隔，如 A委托人）')
+                     help='展开到子案件夹的系列案总夹名（逗号分隔，如 A闽兴）')
     p_g.add_argument('--show', action='store_true', help='打印生成的文本（配合 --case 用）')
     p_g.add_argument('--apply', action='store_true')
 
     p_si = sub.add_parser('series-inbox',
                           help='系列案总夹：给子案件夹补 00-收件箱（只新增空目录）')
-    p_si.add_argument('--case', required=True, help='系列案总夹名（如 A委托人）')
+    p_si.add_argument('--case', required=True, help='系列案总夹名（如 A闽兴）')
     p_si.add_argument('--apply', action='store_true')
 
     p_a = sub.add_parser('archive')
@@ -2768,7 +2768,7 @@ def main():
 
     if args.cmd == 'tree':
         print('案件夹（%s）：' % case_root())
-        print('  <编号_委托人VS对方_案由>/')
+        print('  <编号_闽兴VS对方_案由>/')
         for d in TREE_BASE + TREE_EXEC + [PIPELINE_DIR]:
             mark = '（执行案才建）' if d in TREE_EXEC else ''
             print('    ├── %s%s' % (d, mark))
