@@ -22,7 +22,11 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-import pymupdf                                            # noqa: E402
+try:
+    import pymupdf                                        # noqa: E402
+except ImportError:
+    print('SKIP 未安装 PyMuPDF（pip install pymupdf）——卷宗装订相关回归跳过')
+    raise SystemExit(0)
 
 fails, total = [], []
 

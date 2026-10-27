@@ -1,7 +1,7 @@
 # 集成指南：强绑定功能怎么替、AI 怎么接
 
 > 这份文档解决两件事：
-> ① 作者环境里那些**别人没有的东西**（私有 LLM 池、Obsidian、特定 OCR、桌宠通知、所内模板），你用什么替；
+> ① 作者环境里那些**别人没有的东西**（私有 LLM 池、Obsidian、特定 OCR、外部服务通知、所内模板），你用什么替；
 > ② 怎么让 **AI 助手**（Claude Code / WorkBuddy / Cursor）安全地在这套工作台上干活。
 >
 > 原则：**工作台只负责数据与流程，智能能力一律外挂。** 外挂可替换、可关闭、可审计。
@@ -85,12 +85,12 @@
 
 ---
 
-### 4. 期限提醒（原：Windows toast + 桌宠气泡）
+### 4. 期限提醒（原：Windows toast + 外部服务气泡）
 
 | 项 | 说明 |
 |---|---|
 | 它做什么 | 到期前 60/30/14 天提醒；开庭日提醒 |
-| 原实现 | Windows toast（PowerShell WinRT）+ 桌宠气泡端口 |
+| 原实现 | Windows toast（PowerShell WinRT）+ 外部服务气泡端口 |
 | **替代 A** | 只用页面内提醒：不配任何东西，打开工作台首页就有红点与清单 |
 | **替代 B** | webhook（**需自行扩展**，约 20 行）：在 `deadline_check.py` 推送段加一个 POST；配置项 `notification.webhook_url` 已预留 |
 | **替代 C** | 系统计划任务 + `python deadline_check.py --no-toast`（只刷数据，不弹窗） |

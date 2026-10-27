@@ -40,6 +40,8 @@ PATTERNS = [
 
 #: 允许出现的假值（文档示例 / 测试夹具），避免误报
 ALLOW = {
+    '（2099）某0000民初0号', '（2099）某 0000 民初 0 号',
+    '(2099)某0000民初0号', '(2099)某 0000 民初 0 号',
     '13900000000', '13900000001', '13900000002', '13800000000',
     '13100000000', '13200000000', '14020000000',
     '350200199001010000', '13500000000000000',
@@ -60,8 +62,7 @@ def _skip_case_no(rel, strict):
     if strict:
         return False
     base = os.path.basename(rel)
-    return base.startswith('test_') or base in ('demo_seed.py', 'smoke_views.py',
-                                                'court_sms_ops.py')
+    return base.startswith('test_') or base in ('demo_seed.py', 'smoke_views.py')
 
 
 def load_words():

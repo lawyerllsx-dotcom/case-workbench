@@ -1,0 +1,46 @@
+--- 前端页面渲染冒烟 ---
+CHECK home 执行案独立视图 OK（1 件，含 09 的 0 件）
+CHECK home 问候区（caps+问候+分布副标题）OK
+PASS home  (html 3529 字符)
+CHECK board 泳道顺序/闭合过滤/卡数/含已结案重拉 OK
+CHECK board AI 分析按钮 + 请求路径 + 结果渲染 OK
+CHECK board 拖拽滚动 + 点击吞没 + 状态分色 + wheel劫持已删 OK
+PASS board  (html 2261 字符)
+PASS clients  (html 1772 字符)
+CHECK cases 台账行/时间轴渲染 OK（未匹配明说 + 已匹配给依据与时间轴）
+SKIP cases  :: 系列案总夹未显示徽章  （示例数据不足，非代码缺陷）
+CHECK tasks 关联案件取自台账行 OK（样本 民-A-26…）
+PASS tasks  (html 2008 字符)
+SKIP ledger  :: 中文查询未收窄到目标行  （示例数据不足，非代码缺陷）
+CHECK new 开案页字段齐全 + 预览/结果引导 OK
+CHECK new 预填卡 OK（两入口 + 两函数）
+PASS new  (html 2475 字符)
+CHECK writing 项目表/chips 计数/本地筛选 OK
+PASS writing  (html 3468 字符)
+CHECK intake 法院短信卡 + 三纯函数渲染 + 下载请求链 OK
+PASS intake  (html 1613 字符)
+CHECK fees 差旅发票索引入口 OK
+CHECK fees 发票上传/归案入口 OK（案件下拉 3，库根 D:\WorkArea\opensource\case-workbench\demo\案件\发票库）
+PASS fees  (html 3717 字符)
+CHECK deadlines 双视图 OK（清单 + 月视图·日程；未完成期限 0 条，手工日程 0 条）
+CHECK deadlines 无未完成期限项 → 跳过按钮断言
+PASS deadlines  (html 1814 字符)
+CHECK archive 卷宗装订包卡片 + dry-run 请求 + 清单/完成渲染 OK
+CHECK archive 归档三步入口 + 知识库案件页清单 OK（页 0，已标 0）
+PASS archive  (html 2787 字符)
+CHECK letters 新增发函对象入口 OK（7 字段 + letterAddDo，批 41）
+CHECK letters 一键打开文件夹 + EMS 导入 OK（7 函数 + 3 元素 + 2 工具，批 46）
+SKIP letters  :: 缺「签收」按钮（批 48 由「签收记录」缩名）  （示例数据不足，非代码缺陷）
+CHECK contracts 表格/统计头/chips/建夹指引 OK
+PASS contracts  (html 3199 字符)
+SKIP scatter  :: 散件页缺入库入口  （示例数据不足，非代码缺陷）
+SKIP sohan  :: 所函模板不可用：模板不存在：D:\WorkArea\opensource\case-workbench\templates\所函模板.docx  （示例数据不足，非代码缺陷）
+SKIP trace  :: 详情页缺归位入口  （示例数据不足，非代码缺陷）
+CHECK assistant 工作台助理 OK（对话 4 控件 + 7 函数 + 首页提醒卡三断言）
+PASS assistant  (html 1141 字符)
+CHECK calc ⑪ 执行款清偿分配（3 组手算 + 行解析）OK
+CHECK calc ⑫⑬⑭ 劳动第二期（4 组加班/竞业/工伤 + 最低工资兜底 + 2008 分段）OK
+CHECK calc 计算器 11 组大写 + 9 组分段/利息 + 3 组解析 + 4 组律师费区间 + 7 组劳动核验 OK
+CHECK deepdive 研究报告区块（两类并列）+ 预览请求路径 OK
+PASS calc  (html 13876 字符)
+（示例数据模式：6 项数据形态差异已标 SKIP，接真实台账后应为 PASS）

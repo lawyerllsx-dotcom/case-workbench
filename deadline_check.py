@@ -3,15 +3,15 @@
 r"""
 deadline_check.py — 期限/日程提醒推送（法律工作台 · 阶段 4；批 D 起双通道）
 
-链路（2026-09-18 批 D 起：**toast 为主 + 桌宠气泡为备用**，拍板 D1）：
+链路（2026-09-18 批 D 起：**toast 为主 + 外部服务气泡为备用**，拍板 D1）：
   1) 先刷新期限表：读台账（只读）→ `deadline_ops.extract_from_ledger` + merge → 写 `data\deadlines.json`
   2) 取临期/逾期项 + 手工日程 → 组装一句文本
   3) **先发 Windows toast**（`toast_notify.notify`）→ 成功则**不再推气泡**（防重复打扰）
-  4) toast 失败（或 force-bubble）→ **回退桌宠气泡**：POST http://127.0.0.1:7777/bubble
+  4) toast 失败（或 force-bubble）→ **回退外部服务气泡**：POST http://127.0.0.1:7777/bubble
      （header `x-petdex-update-token`，token 文件 `~\.petdex\runtime\update-token`）
   5) 两边都失败 → 写 `workbench.log` 兜底；期限页打开即见（不依赖推送）
 
-为什么保留气泡通道：桌宠可能在跑（它是 wb-proxy 8788 的宿主），气泡是它能力的一部分；
+为什么保留气泡通道：外部服务可能在跑（它是 wb-proxy 8788 的宿主），气泡是它能力的一部分；
 toast 若被系统策略/通知权限拦下，气泡是可靠兜底。两通道**不同时推**，避免双份打扰。
 
 为什么用 `/bubble` 而不是 `/mood`：`/mood` 是**额度心情主权通道**（`push-mood.js` 是唯一写者，30 秒一推），
@@ -171,7 +171,7 @@ def main():
     ap.add_argument('--dry-run', action='store_true', help='只算不推')
     ap.add_argument('--no-refresh', action='store_true', help='不刷新台账派生')
     ap.add_argument('--force', action='store_true', help='忽略当日去重限制')
-    ap.add_argument('--bubble-only', action='store_true', help='强制走桌宠气泡（跳开 toast）')
+    ap.add_argument('--bubble-only', action='store_true', help='强制走外部服务气泡（跳开 toast）')
     ap.add_argument('--toast-only', action='store_true', help='强制只走 toast（跳开气泡回退）')
     ap.add_argument('--selftest', action='store_true')
     args = ap.parse_args()
@@ -187,7 +187,7 @@ def main():
             stat, skipped = None, 0
 
     items = deadline_ops.due_items(args.days)
-    # 2026-09-17 批 37：桌宠气泡同时带「手工日程」（两套数据合并推送，各标前缀区分）
+    # 2026-09-17 批 37：外部服务气泡同时带「手工日程」（两套数据合并推送，各标前缀区分）
     sched = []
     try:
         import schedule_ops
@@ -254,7 +254,7 @@ def main():
             print('toast 失败（--toast-only，不推气泡）：%s' % detail)
             return 0
         else:
-            print('toast 失败，回退桌宠气泡：%s' % detail)
+            print('toast 失败，回退外部服务气泡：%s' % detail)
     if channel is None:                                     # 气泡通道（回退 或 --bubble-only）
         ok, bdetail = push_bubble(text)
         if ok:
@@ -263,7 +263,7 @@ def main():
             log('推送失败（toast+气泡都不通）：toast=%s | bubble=%s | text=%s'
                 % (detail, bdetail, text))
             print('推送失败（已写 workbench.log 兜底）：%s' % bdetail)
-            print('提示：桌宠未开、且 toast 不可用属异常；期限页打开即见。')
+            print('提示：外部服务未开、且 toast 不可用属异常；期限页打开即见。')
             return 0
 
     save_state({'date': today, 'text': text,

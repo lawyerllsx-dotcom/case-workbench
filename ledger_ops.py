@@ -3,7 +3,7 @@
 r"""
 ledger_ops.py — 案件管理台账读写库（法律工作台数据层 · 单一实现）
 
-定位：Web 操作台与煤球会话**共用**的台账读写库（Sol 原则：同一逻辑只一份实现）。
+定位：Web 操作台与工作台会话**共用**的台账读写库（单一实现原则：同一逻辑只一份实现）。
 纪律（写死在代码里）：
   - 一切写操作默认 dry-run，必须显式 --apply 才落盘
   - 写前自动备份（默认落 <台账备份目录>\，可用 LEDGER_BACKUP_ROOT 覆盖）
@@ -138,13 +138,15 @@ def backup(apply=False):
     src = _check_inputs()
     root = backup_root()
     stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-    dst = os.path.join(root, '案件管理台账模版表-备份-%s.xlsx' % stamp)
+    # 备份名从「用户实际台账文件名」派生，避免换台账后按说明恢复错文件
+    stem = os.path.splitext(os.path.basename(src))[0]
+    dst = os.path.join(root, '%s-备份-%s.xlsx' % (stem, stamp))
     if os.path.exists(dst):
         i = 2
         while os.path.exists(os.path.join(
-                root, '案件管理台账模版表-备份-%s-%d.xlsx' % (stamp, i))):
+                root, '%s-备份-%s-%d.xlsx' % (stem, stamp, i))):
             i += 1
-        dst = os.path.join(root, '案件管理台账模版表-备份-%s-%d.xlsx' % (stamp, i))
+        dst = os.path.join(root, '%s-备份-%s-%d.xlsx' % (stem, stamp, i))
     if not apply:
         return dst, False
     os.makedirs(root, exist_ok=True)
@@ -156,8 +158,9 @@ def backup(apply=False):
     if not os.path.isfile(man):
         with open(man, 'w', encoding='utf-8') as f:
             f.write('# 台账备份台账\n\n> 由 ledger_ops.py backup 自动追加。恢复方式：'
-                    '把备份文件复制回台账目录并改名为 案件管理台账模版表.xlsx。\n\n'
-                    '| 备份时间 | 备份文件 | 源文件 | 字节 |\n|---|---|---|---|\n')
+                    '把备份文件复制回台账所在目录，并改名为 %s。\n\n'
+                    '| 备份时间 | 备份文件 | 源文件 | 字节 |\n|---|---|---|---|\n'
+                    % os.path.basename(src))
     with open(man, 'a', encoding='utf-8') as f:
         f.write(line)
     return dst, True
@@ -454,7 +457,7 @@ def status_pool():
 def read_rows(sheet, limit=None):
     """读 sheet 数据行 → [{'_row': n, 列名: 值, ...}]
 
-    批 52：sheet 不存在时**优雅返回 []**（如「合同审查」表由爸爸在 WPS 手工建，
+    批 52：sheet 不存在时**优雅返回 []**（如「合同审查」表由用户在 WPS 手工建，
     还没建时页面不得被异常冲垮）。"""
     cols = COLS_BY_SHEET.get(sheet, COLS)
     wb = _open()
@@ -500,7 +503,7 @@ CONTRACT_HEADER = [k for k, _ in sorted(CONTRACT_COLS.items(), key=lambda kv: kv
 def ensure_contract_sheet(apply=False):
     """受控建「合同审查」sheet（批 54，默认 dry-run，幂等）。
 
-    爸爸拍板（2026-10-09）：合同审查业务线的账记台账新 sheet。本函数把「建表」
+    用户拍板（2026-10-09）：合同审查业务线的账记台账新 sheet。本函数把「建表」
     从手工动作升级为**受控通道**——与 I→J 回写同一套三重闸：锁检测 → 备份 →
     写后全簿审计（allowed 之外零变化）。幂等语义：
       · sheet 不存在 + 未 apply → 返回 will_create 方案（不落盘）
@@ -769,7 +772,7 @@ def status_is_rule_ok(v):
 def plan_letter_update(row_idx, sign=None, follow=None, rows=None):
     """律师函表回写**计划**（不落盘）：签收状态 / 后续跟进。
 
-    爸爸 2026-09-17 拍板 ③：开受控回写。纪律：
+    用户 2026-09-17 拍板 ③：开受控回写。纪律：
       ① 只允许这两列（J 列备注绝不碰）
       ② 两列都为空 → 无改动，直接拒；与现状相同 → 跳过（不白写）
       ③ 该表无「进度日志」列 → 回退唯一手段 = **写前备份**（执行时强制留）
@@ -891,7 +894,7 @@ def plan_progress(sheet, row_idx, new_text, date_label=None, new_status=None):
         if m:
             label, new_text = m.group(1), m.group(2).strip()
     # 回迁条目：旧值**自带 MM.DD： 前缀**时原样入日志 —— 否则会叠成双重日期
-    # （2026-09-12 爸爸实测；旧值自带日期比「写入新值那天」更准确，且是台账既有写法）
+    # （2026-09-12 用户实测；旧值自带日期比「写入新值那天」更准确，且是台账既有写法）
     if not new_text or not old_i:
         entry = None
     elif re.match(r'^\d{2}\.\d{2}[：:]', old_i):
@@ -978,7 +981,7 @@ def append_draft_row(sheet, values, force_lock=False):
     return plan, dst
 
 
-# ------------------------------------------------- 批 41：律师函表新增行（爸爸 2026-09-18 拍板）
+# ------------------------------------------------- 批 41：律师函表新增行（用户 2026-09-18 拍板）
 #: 新增行允许填的列（序号自动；签收状态/后续跟进**不收**——留空由受控回写 LETTER_WRITE_COLS 维护）
 LETTER_ADD_COLS = ['委托人', '发函日期', '承办律师', '收函对象',
                    '欠款金额（本金）', '案由', '备注']

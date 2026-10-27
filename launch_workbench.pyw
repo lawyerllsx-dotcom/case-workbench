@@ -28,7 +28,7 @@ import urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 APP = os.path.join(HERE, 'app.py')
 LOG = os.path.join(HERE, 'app.out.log')
-# 单实例（批 42，2026-09-18 爸爸拍板「完全禁止误操作双开」）：
+# 单实例（批 42，2026-09-18 用户拍板「完全禁止误操作双开」）：
 #   已有服务 → 零弹窗，直接唤起已有工作台窗口（壳或 Edge），本进程秒退；
 #   服务未就绪但已有启动器在拉 → 后来者静默退出（先到者负责到底）。
 #   事件名/窗口标题与 shell_workbench.pyw 保持一致（壳的 mutex 负责壳不双开，
@@ -36,7 +36,7 @@ LOG = os.path.join(HERE, 'app.out.log')
 SHELL_SHOW_EVENT = 'LegalWorkbenchShellShow'
 LAUNCH_MUTEX = 'LegalWorkbenchLauncherMutex'
 
-# 批 47b：8799 → 8899（wb-proxy 临时端口池 8791~8799 撞车，爸爸拍板换段）
+# 批 47b：8799 → 8899（wb-proxy 临时端口池 8791~8799 撞车，用户拍板换段）
 PORTS = list(range(8899, 8911))
 BASE_URL = 'http://127.0.0.1:%d'
 WIN_TITLE = '法律工作台'
@@ -214,7 +214,7 @@ def single_launcher_or_exit():
 
 
 def open_workbench_window(port):
-    """开工作台窗口：优先 pywebview 桌面壳（真窗口，2026-09-13 爸爸拍板）；
+    """开工作台窗口：优先 pywebview 桌面壳（真窗口，2026-09-13 用户拍板）；
     壳/解释器缺失时回退 Edge --app，再回退默认浏览器。"""
     url = BASE_URL % port
     shell = os.path.join(HERE, 'shell_workbench.pyw')
@@ -275,7 +275,7 @@ class Splash:
         self._angle = 0
         self._spin()
         self.t0 = time.time()
-        # 自适应尺寸：DPI 缩放下字体变大，写死高度会被裁切（爸爸实机已踩）
+        # 自适应尺寸：DPI 缩放下字体变大，写死高度会被裁切（用户实机已踩）
         # 宽度按「最长状态文案」预留——否则文案变长时被挤压盖住转圈（第二轮实踩）
         self.status.config(text='服务就绪，正在打开界面…')
         self.root.update_idletasks()
@@ -410,7 +410,7 @@ def run(with_ui=True):
 
     # 批 47h：全部阻塞工作进 worker 线程；Tk 主线程只做「转圈动画 + 收消息 + 关窗」。
     # （47g 曾把探测/拉服务挪进 poll 的 after 回调——仍是主线程，慢调用一卡、
-    #   mainloop 停摆，弹窗直接「无响应」——爸爸实测「弹窗都是卡住的」。）
+    #   mainloop 停摆，弹窗直接「无响应」——用户实测「弹窗都是卡住的」。）
     msgq = queue.Queue()
 
     def say(text):

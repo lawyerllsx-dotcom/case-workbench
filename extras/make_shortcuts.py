@@ -2,7 +2,7 @@
 """make_shortcuts.py — 重建桌面两个快捷方式（法律工作台 · 静默启动 / 一键关闭）
 
 背景：工作台是**本地 Web 服务**（非独立 exe）。原先桌面图标指向 `.bat`，双击会弹 CMD 黑窗
-（2026-09-12 爸爸反馈）。现改为指向 `pythonw.exe` + `.pyw` 静默启动器 → **不弹黑窗**。
+（2026-09-12 用户反馈）。现改为指向 `pythonw.exe` + `.pyw` 静默启动器 → **不弹黑窗**。
 
 用法：
     <default venv python> make_shortcuts.py            # 生成 ps1 并尝试自动执行

@@ -67,7 +67,7 @@ window.btnBusy = btnBusy;
 
 /* ---- 浮层（modal）——批 46.5 新增 ------------------------------------------
    为什么需要：批 46.x 把各种结果都渲到表格**下方**的 letterOut，用户**不往下滚
-   就看不到**（实测爸爸连点多次仍认为「没反应」——后端日志显示请求全成功了）。
+   就看不到**（实测用户连点多次仍认为「没反应」——后端日志显示请求全成功了）。
    ⇒ 结论：**「结果渲染位置」和「用户视线位置」必须重合**。
      凡"点一下要出结果"的操作，一律用**居中浮层**呈现，不再用"渲到下方"。
    ESC / 点遮罩 / 点关闭 都能关；浮层内可滚（长内容）。
@@ -378,7 +378,7 @@ window.boardAiRun = async function () {
   try {
     const r = await post('/api/board/analyze', {});
     if (r.llm === 'down') {
-      patchInner('boardAiOut', `<div class="hint" style="margin-bottom:8px">⚠️ ${esc(r.msg || '桌宠/8788 不在线')}——开桌宠后再试。</div>`);
+      patchInner('boardAiOut', `<div class="hint" style="margin-bottom:8px">⚠️ ${esc(r.msg || '外部服务/8788 不在线')}——开外部服务后再试。</div>`);
     } else if (!r.ok) {
       patchInner('boardAiOut', `<div class="hint" style="margin-bottom:8px">${failHintHtml(r.error || '分析失败')}</div>`);
     } else {
@@ -406,7 +406,7 @@ window.boardGo = async function (name) {
   if (inp) inp.value = frag;
   caseSearch(frag);
 };
-/* 批 55b：泳道拖拽滚动 + 滚轮横移（爸爸反馈「底部滚动条拉动时看不到上面内容」）。
+/* 批 55b：泳道拖拽滚动 + 滚轮横移（用户反馈「底部滚动条拉动时看不到上面内容」）。
    按住空白处拖 = 内容随手走（>6px 才算拖，避免误触卡片点击）；滚轮上下 = 横向左右
    （只在容器可横滚且真的滚动了才拦默认竖滚）。 */
 function boardBindDrag() {
@@ -437,7 +437,7 @@ function boardBindDrag() {
   host.addEventListener('click', ev => {
     if (moved) { moved = 0; ev.stopPropagation(); ev.preventDefault(); }
   }, true);
-  /* 批 56b：wheel 劫持**已删除**（爸爸反馈「横向条和页面竖向条鼠标滚动打架」）。
+  /* 批 56b：wheel 劫持**已删除**（用户反馈「横向条和页面竖向条鼠标滚动打架」）。
      竖滚一律归页面、横滚走：① 按住空白拖（上面）② Shift+滚轮/触控板横滑（浏览器原生）
      ③ 底部滚动条。滚轮不再改向，零抢方向。 */
 }
@@ -630,7 +630,7 @@ window.showCase = async function(name) {
 };
 
 /* ---------------- 案件研究报告（批 49 立「深挖报告」，批 60 泛化） ----------------
-   报告由煤球在 WorkBuddy 会话里跑元典生成，按约定落案件夹 08-过程文件\研究报告\
+   报告由助手在 WorkBuddy 会话里跑元典生成，按约定落案件夹 08-过程文件\研究报告\
    （被执行人深挖报告-YYYYMMDD.md / 承办法官裁判参考-<法官>-YYYYMMDD.md 等）；
    工作台只读列出，预览走 /api/deepdive/view（本机文本直显，不上行 LLM，零外发）。 */
 let DD_DATA = null;   // 当前详情页的研究报告清单快照（ddView 按索引取，避免 onclick 拼长文件名）
@@ -639,12 +639,12 @@ function deepdiveBlockHtml(dd, caseName) {
   let h = `<h2 style="margin-top:12px">案件研究报告（${dd.count}）</h2>`;
   if (!dd.count) {
     h += `<div class="dim">本夹还没有研究报告。</div>
-      <div class="hint">在煤球会话里说「深挖 某公司」→ 元典查被执行人关联公司 / 股权 / 司法 / 执行线索；说「查 某案 承办法官裁判参考」→ 元典查该法官同类案件被撤销 / 发回的理由、按我方立场给攻防线索
+      <div class="hint">在工作台会话里说「深挖 某公司」→ 元典查被执行人关联公司 / 股权 / 司法 / 执行线索；说「查 某案 承办法官裁判参考」→ 元典查该法官同类案件被撤销 / 发回的理由、按我方立场给攻防线索
       → 报告自动落本夹 <b>08-过程文件\\研究报告\\</b>（被执行人深挖报告 / 承办法官裁判参考-<法官>-日期.md 等），这里就会列出。
       <button class="act ghost mini" onclick="ddOpen('${jsq(caseName)}')">📂 打开存放位置</button></div>`;
     return h;
   }
-  h += `<div class="hint">由煤球在会话里跑元典生成，落 ${esc(dd.dir)}；工作台只读列出。
+  h += `<div class="hint">由助手在会话里跑元典生成，落 ${esc(dd.dir)}；工作台只读列出。
       <button class="act ghost mini" onclick="ddOpen('${jsq(caseName)}')">📂 打开文件夹</button></div>
     <table><tr><th>报告</th><th style="width:100px">日期</th><th style="width:88px">大小</th><th style="width:130px">操作</th></tr>`;
   dd.items.forEach((it, i) => {
@@ -1036,7 +1036,7 @@ function pfShowResult(r, out) {
   if (!out) return;
   if (!r) { out.innerHTML = '<span class="warn">没有拿到结果。</span>'; return; }
   if (r.llm === 'down') {
-    out.innerHTML = `<span class="warn">${esc(r.msg || '桌宠/8788 不在线')}——等桌宠在跑时再试，或直接手工填写下表。</span>`;
+    out.innerHTML = `<span class="warn">${esc(r.msg || '外部服务/8788 不在线')}——等外部服务在跑时再试，或直接手工填写下表。</span>`;
     return;
   }
   if (!r.ok) { out.innerHTML = failHintHtml(r.error || '预填失败'); return; }
@@ -1443,15 +1443,15 @@ window.doIntake = async function(confirm) {
 function failHint(err) {
   const msg = String((err && (err.message || err)) || '未知错误').trim();
   const m = msg.toLowerCase();
-  if (/桌宠|8788|econnrefused|failed to fetch|无法连接|network|connection|通道/.test(m))
-    return {why: '本地 AI 服务（桌宠 8788）没在运行，或连接被挡', todo: '双击桌面「桌宠」图标启动（WB 代理需开着）后重试；仍不行就刷新本页'};
+  if (/外部服务|8788|econnrefused|failed to fetch|无法连接|network|connection|通道/.test(m))
+    return {why: '本地 AI 服务（外部服务 8788）没在运行，或连接被挡', todo: '双击桌面「外部服务」图标启动（WB 代理需开着）后重试；仍不行就刷新本页'};
   if (/timeout|超时|abort/.test(m))
-    return {why: '等太久了——服务可能正忙，或这次任务太重', todo: '稍等十几秒再点一次；连续超时先看桌宠与工作台是否在跑'};
+    return {why: '等太久了——服务可能正忙，或这次任务太重', todo: '稍等十几秒再点一次；连续超时先看外部服务与工作台是否在跑'};
   if (/500|internal|内部/.test(m))
     return {why: '工作台服务内部出错了', todo: '看 app.out.log 尾部日志；或重启工作台（双击图标）后重试'};
   if (/404|不存在|未找到|not found/.test(m))
     return {why: '找不到对应的文件或接口', todo: '刷新页面重试；文件类的先确认文件还在原位置（没被改名/移走）'};
-  return {why: msg.slice(0, 120) || '未知错误', todo: '先重试一次；连续失败就把这句话截图发给煤球看看'};
+  return {why: msg.slice(0, 120) || '未知错误', todo: '先重试一次；连续失败就把这句话截图发给助手看看'};
 }
 window.failHint = failHint;
 
@@ -1762,7 +1762,7 @@ window.invLib = async function() {
 /* ---------------- 律师函（§4.4 业务线：台账表 + 文件系统夹） ---------------- */
 let LETTER_ITEMS = null;                    // 当前页的台账「律师函」行（供一键建任务取数）
 /* ============================ 散件页（批 36） ============================
-   爸爸 2026-09-17 定调：`D:\案件\你的案卷根` 下「律师函 / 合同 / 差旅发票 / 所函 /
+   用户 2026-09-17 定调：`D:\案件\你的案卷根` 下「律师函 / 合同 / 差旅发票 / 所函 /
    介绍信 / 判决书 / 接收到的文件」这些横向目录是**故意这么放的**（方便找），
    不归拢、不搬家；其中一部分在个案里没有（非直接经手）。本页只做**索引视图**：
    汇总 + 搜索 + 疑似归属，**一个文件都不动**。
@@ -2118,7 +2118,7 @@ return h + '</div>';
 }
 
 /* ============================ 所函页（批 39a） ============================
-   爸爸 2026-09-17 拍板：① 落点＝选定案卷 01-委托手续 ② 出具日期**留空**。
+   用户 2026-09-17 拍板：① 落点＝选定案卷 01-委托手续 ② 出具日期**留空**。
    铁律：**正式法律文书一律复制既有模板改**，禁自拟版式——本页只做「填格 → 预览 → 生成」。 */
 let SOHAN_META = null;
 let COMMISSION_META = null;   // 批 64：委托手续套件 meta 缓存
@@ -2517,7 +2517,7 @@ async function viewCalendar() {
   /* ---- 手工日程（批 37）：与台账派生期限分开的那一套，这里可写 ---- */
   h += '<h3 style="margin-top:16px">手工日程（会谈 / 阅卷 / 出差 / 内部提醒）</h3>';
   h += '<div class="hint">这一块是<b>你自己录的</b>，存在独立的日程文件里——'
-    + '台账派生的期限不会覆盖它，它也不写台账。<b>提前 N 天</b>填了就会在到期前推桌宠气泡。'
+    + '台账派生的期限不会覆盖它，它也不写台账。<b>提前 N 天</b>填了就会在到期前推外部服务气泡。'
     + '<span class="dim">日历格子里带 ▸ 的就是日程。</span></div>';
 
   const kindOpts = (sc.kinds || []).map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
@@ -2546,7 +2546,7 @@ async function viewCalendar() {
     + '</table>';
   if (sc.due && sc.due.length) {
     h += `<div class="warn">今日待提醒 <b>${sc.due.length}</b> 项：`
-      + sc.due.map(x => esc(x['标题'])).join('、') + '（已进桌宠气泡推送队列）</div>';
+      + sc.due.map(x => esc(x['标题'])).join('、') + '（已进外部服务气泡推送队列）</div>';
   }
   const cancelled = sc.cancelled || 0;
   if (cancelled) h += `<div class="hint">另有 ${cancelled} 条已删除日程（软删留痕，未从文件移除）。</div>`;
@@ -2645,7 +2645,7 @@ window.calMove = calMove;
 window.calToday = calToday;
 
 /* ========================= 律师函台（批 39b，三段联动） =========================
-   爸爸 2026-09-17 拍板 ③：签收状态 / 后续跟进**开受控回写**（走台账三重闸）。
+   用户 2026-09-17 拍板 ③：签收状态 / 后续跟进**开受控回写**（走台账三重闸）。
    三段：① 台账行（可回写两列）② 债务人夹文件（只读）③ 发函进展。
    认不出对应夹的行 → 明说「未认到夹」，不硬套。 */
 /* ---- 批 41：新增发函对象（台账律师函 sheet 受控加行 + 批量催收件建材料夹）---- */
@@ -2906,7 +2906,7 @@ async function letterShowFiles(row, btn) {
   const restore = btnBusy(btn, '读取中…');
   try {
   /* 批 48：改**点按实时扫夹**——原先用进页时的 LETTER_ITEMS 缓存，之后新放进
-     夹子的文件（如盖章扫描件）不显示（爸爸 09-21 实踩）。接口毫秒级，勿改回缓存。 */
+     夹子的文件（如盖章扫描件）不显示（用户 09-21 实踩）。接口毫秒级，勿改回缓存。 */
   const ff = await api('/api/letter/folder_files?folder=' + encodeURIComponent(x.matched_folder));
   if (ff.error) { inlineMsg(cid, ff.error, 'err'); return; }
   const byKind = {};
@@ -2942,7 +2942,7 @@ window.letterShowFiles = letterShowFiles;
 
 /* 批 48：📄 函件——台账行专用入口，一键只看「盖章函扫描件」（kind=律师函，
    自动排除 _备份 夹），与「签收记录」并列；实时扫夹（folder_files 接口），
-   预览走 file_view 直出。爸爸 09-21：盖章扫描件要能像签收记录一样直接看。 */
+   预览走 file_view 直出。用户 09-21：盖章扫描件要能像签收记录一样直接看。 */
 async function letterDocs(row, btn) {
   const cid = 'lt-' + row;
   const x = (LETTER_ITEMS || []).find(v => v.row === row);
@@ -3034,12 +3034,12 @@ async function letterSignRecs(row, btn) {
 }
 window.letterSignRecs = letterSignRecs;
 
-/* ---- 批 46：打开本地文件夹 / 重扫 / EMS 导入（爸爸要求「一键直达」）-------------
+/* ---- 批 46：打开本地文件夹 / 重扫 / EMS 导入（用户要求「一键直达」）-------------
    设计要点：浏览器**不能直接读本地路径**（安全沙箱），所以一律走后端接口，
    后端做**白名单校验**（只允许案件/备份体系内的路径）后再调 explorer 打开。
    ——这既满足「点一下就打开」，又不会变成「任意目录浏览器」。
 ------------------------------------------------------------------------- */
-/* 批 46.6（爸爸拍板「全在页面内」）：**不再弹资源管理器**。
+/* 批 46.6（用户拍板「全在页面内」）：**不再弹资源管理器**。
    实测外部窗口层级/焦点不可控——窗口确实开出来了且未最小化，但用户看不到，
    反复误判「点了没反应」。改为**页内列出所有债务人夹**，点某一夹即看其文件。 */
 async function letterOpenRoot(btn) {
@@ -3158,11 +3158,11 @@ async function letterPreviewImg(row, rel, btn) {
 }
 window.letterPreviewImg = letterPreviewImg;
 
-/** 下载文件到本地（批 46.6，爸爸拍板「全在页面内」）。
+/** 下载文件到本地（批 46.6，用户拍板「全在页面内」）。
     为什么不用 os.startfile：外部窗口层级/焦点不可控——实测窗口确实开出来了
     且未最小化，但用户看不到 → 反复「点了没反应」。浏览器原生下载**零依赖**。
     后端返回 base64，这里拼 Blob + <a download> 触发（避免超长 dataURL 限制）。 */
-/** 打开文件所在文件夹（批 47e，爸爸拍板 A：文件本来就在本地，浏览器下载多余）。
+/** 打开文件所在文件夹（批 47e，用户拍板 A：文件本来就在本地，浏览器下载多余）。
     取代原 letterDownload（浏览器下载会在「下载」目录再复制一份副本）。
     走 /api/letter/open_folder + select=文件 → 后端 os.startfile 打开**文件所在
     的最深目录**（实测唯一可靠方式）；浮层回执提示窗口可能在浏览器后面。 */
@@ -3209,7 +3209,7 @@ async function letterRescan(btn) {
   try {
     await post('/api/letter/rescan', {});
     /* 批 48：**真刷新**——原版只调接口报数、页面数据纹丝不动（假动作，
-       爸爸实踩「放新文件点重扫也看不到」→ 误以为要建索引）。render() 会重拉
+       用户实踩「放新文件点重扫也看不到」→ 误以为要建索引）。render() 会重拉
        /api/letters（台账行+夹清单全部新鲜）。此处是全页刷新语义，非行操作。 */
     toast('重扫完成，页面已刷新');
     await render();
@@ -3359,11 +3359,11 @@ function letterTaskPayload(x) {
   return {title: title, case_ref: '', priority: '普通', due_date: '',
           note: bits.join('｜'), letter_row: x.row};
 }
-/* 建任务 —— **两段式：先预览，再确认**（批 46.1 爸爸要求加二次确认）。
+/* 建任务 —— **两段式：先预览，再确认**（批 46.1 用户要求加二次确认）。
    ⚠️ 历史教训（三条，都在本轮实踩过）：
    ① 原 `await render()` 整页重绘 → 页面高度突变 → 按钮移位 → 点到错误行
    ② 原 alert / 顶部 toast 反馈，用户视线在表格中间**看不见**
-   ③ 原**点一下即落库、无二次确认** → 爸爸「不小心点了一下」就建了 3 条错任务
+   ③ 原**点一下即落库、无二次确认** → 用户「不小心点了一下」就建了 3 条错任务
       （#221/#222/#223，均误建，已删）
    → 现改为：点击 → 行内展开预览卡（标题/关联案件/优先级/截止/来源）→「确认建」才落库。
    这与全站受控回写惯例（预览 → 确认）一致；且**不整页重绘**，预览只占该行下方。 */
@@ -3417,7 +3417,7 @@ window.letterToTaskDo = async function(row, btn) {
     const r = await post('/api/tasks', {title: p.title, case_ref: p.case_ref, priority: p.priority,
       due_date: p.due_date, note: p.note, confirm: true});
     const tid = (r && r.task) ? r.task.id : '';
-    /* 反馈：说清「建到哪了」+ 给跳转入口（爸爸反馈「建了不知道去哪」）。
+    /* 反馈：说清「建到哪了」+ 给跳转入口（用户反馈「建了不知道去哪」）。
        行内 + 按钮变完成态，不整页重绘（防跳位）。 */
     const el = document.getElementById(cid);
     if (el) {
@@ -3880,7 +3880,7 @@ let LED_EDIT = null, LED_PREVIEW = null, LED_FILTER = {q: '', st: 'all'};
 const jsq = s => String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
 /* 局部重绘：只换指定容器的内容，**不重建输入框**
-   —— 2026-09-12 爸爸报「打拼音还没打完就卡住」：原做法「每按键 → 整页 render()」会把输入框
+   —— 2026-09-12 用户报「打拼音还没打完就卡住」：原做法「每按键 → 整页 render()」会把输入框
    元素销毁重建 → 输入法组合状态（未上屏的拼音）+ 光标一起丢，且每次还发一次请求。
    纪律：**搜索/筛选一律局部重绘 + 前端过滤；绝不在输入过程中整页重渲染。** */
 function patchInner(id, html) {
@@ -3940,7 +3940,7 @@ function ledRowsHtml() {
   let h = '';
   for (const r of rows) {
     /* 案号逐个分行：台账 C 列多案号空格连排（如「…民初4194号 （2026）…执保525号」），
-       按「（20xx年）」边界拆开各占一行，避免与行标签挤在一起断行难看（爸爸截图反馈） */
+       按「（20xx年）」边界拆开各占一行，避免与行标签挤在一起断行难看（用户截图反馈） */
     const cnos = (r['案号'] || '').trim().split(/(?=（20\d{2}）)/).map(s => s.trim()).filter(Boolean);
     h += `<tr><td><b>${esc(r['案件'])}</b>
         <div class="hint">${esc(r.sheet)} r${r.row}</div>
@@ -4388,10 +4388,10 @@ async function viewTasks() {
   return h;
 }
 
-/* ============================================================ 工作台助理（批 C 迁移自桌宠；批 45 升级）
+/* ============================================================ 工作台助理（批 C 迁移自外部服务；批 45 升级）
    对话 + 智能提醒。数据源 = **六源**（台账全字段 + 任务/期限/日程/案卷索引/客户备注，
    见后端 assistant_ops._build_workbench_blocks）；LLM 走本地积分池 8788。
-   ⚠️ **只读纪律（批 45 爸爸拍板 A 方案）**：助理**不能改任何数据**——只能读 + 回答 +
+   ⚠️ **只读纪律（批 45 用户拍板 A 方案）**：助理**不能改任何数据**——只能读 + 回答 +
    引导去对应页面操作。前端不得给它任何写接口。
    ⚠️ **轮数以 AS_TURNS 为准**（与后端 MAX_HISTORY_TURNS 对齐）：**禁在文案里手写轮数**
    （批 45 实踩：标题改了 12、页脚还写 6，同页自相矛盾）。
@@ -4534,7 +4534,7 @@ async function asRemindCard() {
   if (d.unread) h += ` <span class="badge p2">${d.unread} 条未读</span>`;
   h += '</h2>';
   if (st.busy) {
-    h += '<div class="dim">🤔 煤球正在分析台账…（约 10-30 秒，页面会自动刷新）</div>';
+    h += '<div class="dim">🤔 助手正在分析台账…（约 10-30 秒，页面会自动刷新）</div>';
   } else if (!d.count) {
     h += '<div class="dim">'
       + (st.last_run ? '上次分析没有产出提醒。' : '还没分析过台账。')
@@ -5295,7 +5295,7 @@ async function render() {
 }
 (async function init() {
   /* 批 47b：页脚地址动态化——页脚=真实连接地址，一眼自证「窗口连的是谁」
-     （12:33 实踩：硬编码 8799 让爸爸误判窗口连错，实际已连 8899） */
+     （12:33 实踩：硬编码 8799 让用户误判窗口连错，实际已连 8899） */
   try { document.getElementById('footAddr').textContent = '127.0.0.1:' + (location.port || '8899'); } catch (e) {}
   TAB = tabFromHash();
   renderNav();
@@ -5662,7 +5662,7 @@ async function traceGather(caseName) {
 }
 
 /* ================= 批 39h：归档区导入（批量催收件 / 差旅报销）=================
-   爸爸 2026-09-18：「加导入的功能？之前我不是提过类似的要求」→ 照批 30 发票归案同一模式：
+   用户 2026-09-18：「加导入的功能？之前我不是提过类似的要求」→ 照批 30 发票归案同一模式：
    上传只落暂存区 → 人点确认才落盘；只新增不覆盖；写留痕；不写台账。 */
 let ARCHIVE_CTX = {zones: [], staged: null, zone: '差旅报销'};
 

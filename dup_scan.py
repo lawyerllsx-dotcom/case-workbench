@@ -105,7 +105,7 @@ def scan(root, min_size):
 
 
 def load_exempt(path):
-    """读「已知正常」豁免清单（爸爸拍板结论），避免同一批重复件反复上报"""
+    """读「已知正常」豁免清单（用户拍板结论），避免同一批重复件反复上报"""
     import json
     if not path or not os.path.isfile(path):
         return {'rules': []}
@@ -206,7 +206,7 @@ def render(root, files, groups, min_size, triage=False, ex=None):
         for kind, basis, g in exempted:
             by_kind[(kind, basis)].append(g)
         L.append('\n## 三、已知正常（豁免 %d 组，不再上报）' % len(exempted))
-        L.append('\n> 依据来自 `case_workbench\\dup_exempt.json`（爸爸逐项拍板），新增须注明依据与日期。')
+        L.append('\n> 依据来自 `case_workbench\\dup_exempt.json`（用户逐项拍板），新增须注明依据与日期。')
         for (kind, basis), gs in sorted(by_kind.items()):
             L.append('\n### %s —— %d 组' % (kind, len(gs)))
             L.append('\n> 依据：%s' % basis)

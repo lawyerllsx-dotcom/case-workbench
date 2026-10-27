@@ -9,7 +9,7 @@ app.py — 法律工作台 · 本地 Web 操作台（仅 127.0.0.1，零外发�
 写死在代码里的安全纪律：
   - 只绑定 127.0.0.1（局域网不可见）；无任何外网请求；前端无 CDN（全本地文件）
   - 所有写动作必须 POST 且带 `"confirm": true`，否则一律走 dry-run
-  - 台账：Web 端只读 + 立卷追加草稿行（进展更新仍走煤球会话，守 I→J 纪律）
+  - 台账：Web 端只读 + 立卷追加草稿行（进展更新仍走工作台会话，守 I→J 纪律）
   - 不提供案件材料下载/读取接口（只暴露文件名与目录结构）
   - 操作留痕 → `workbench.log`
 
@@ -91,8 +91,8 @@ if _mock_file and os.path.isfile(_mock_file):
 
 
 VERSION = '1.2.0'   # 批 69：对齐 README「数据层 + Web 操作台 v1.2」（兼作新旧进程探针：/api/health）
-# 批 47b（2026-09-19 爸爸拍板）：默认口 8799 → 8899——wb-proxy 临时端口池（8791~8799）
-# 与本台默认口撞车（实锤：converter 占 8799 → 本台被迫漂移 8809/8800 → 爸爸窗口连错
+# 批 47b（2026-09-19 用户拍板）：默认口 8799 → 8899——wb-proxy 临时端口池（8791~8799）
+# 与本台默认口撞车（实锤：converter 占 8799 → 本台被迫漂移 8809/8800 → 用户窗口连错
 # 服务，「点了没反应」复发）。8899 避开 8787/8788/8791-8799 全段，永绝撞车。
 DEFAULT_PORT = int(_config.get('app.port', 8899) or 8899)
 BLOCKED_PORTS = {7777, 8788, 8791, 8792, 8793, 8794, 8795, 8796, 8797}
@@ -405,7 +405,7 @@ DEEPDIVE_SUBDIR = os.path.join('08-过程文件', '研究报告')   # 报告落�
 def _case_deepdive(p):
     r"""案件夹的研究报告清单（批 49 立「深挖报告」，批 60 泛化）。
 
-    报告由煤球在 WorkBuddy 会话里跑元典生成，按约定落案件夹的
+    报告由助手在 WorkBuddy 会话里跑元典生成，按约定落案件夹的
     `08-过程文件\研究报告\`（如 `被执行人深挖报告-YYYYMMDD.md`、
     `承办法官裁判参考-<法官>-YYYYMMDD.md`）。
     工作台只 listdir 列出（**不读正文**——正文预览走 /api/deepdive/view 安全接口，
@@ -848,17 +848,17 @@ def api_board(include_closed=False):
 
 
 def api_board_analyze(body=None):
-    r"""看板 AI 分析（批 55，POST；爸爸拍板加）。
+    r"""看板 AI 分析（批 55，POST；用户拍板加）。
 
     看板数据压紧成清单 → 本地 8788 → 督办分析。台账内容**不出本机**
-    （8788 = 本地积分池，桌宠壳托管）。不可达时优雅降级（页面提示，不报错）。
+    （8788 = 本地积分池，外部服务壳托管）。不可达时优雅降级（页面提示，不报错）。
     日志只记件数与耗时，不记案件名。
     """
     import assistant_ops
     ok, msg = assistant_ops.llm_reachable()
     if not ok:
         return {'ok': False, 'llm': 'down',
-                'msg': '桌宠/8788 不在线' + ('（%s）' % msg if msg else '')}
+                'msg': '外部服务/8788 不在线' + ('（%s）' % msg if msg else '')}
     b = api_board(include_closed=False)
     total_open = sum(l['count'] for l in b['lanes'])
     lines = []
@@ -1307,7 +1307,7 @@ def _trace_case_dir(name):
 
 # ---------------------------------------------------------------- 批 53：LLM 抽取预填
 # 新案材料 → 本机 OCR → **本地 8788** LLM 抽取 → 预填开新案表单（人工核对后才提交）。
-# ⚠️ 红线（爸爸拍板口径）：OCR 文本**只发本地 8788**；抽取结果只进表单草稿——
+# ⚠️ 红线（用户拍板口径）：OCR 文本**只发本地 8788**；抽取结果只进表单草稿——
 #    不写台账、不建案、绝不自动提交（提交权在人）。
 
 PREFILL_MAX_CHARS = 8000
@@ -1381,7 +1381,7 @@ def api_newcase_prefill(body):
     流程：安全闸（纯夹名/白名单扩展名/大小上限）→ OCR → 截断 ≤8000 字 →
           llm_reachable() 探活 → 本地 8788 抽取 → 解析 JSON。
     返回：`{'ok':True,'fields':…,'ocr_chars':N,'elapsed':秒}`；
-         LLM 不可达 `{'ok':False,'llm':'down','msg':'桌宠/8788 不在线'}`（不报错页面）。
+         LLM 不可达 `{'ok':False,'llm':'down','msg':'外部服务/8788 不在线'}`（不报错页面）。
     ⚠️ 日志只记「文件+字符数+耗时」，**不记材料正文**。
     """
     import base64
@@ -1456,7 +1456,7 @@ def api_newcase_prefill(body):
         ok, msg = assistant_ops.llm_reachable()
         if not ok:
             return {'ok': False, 'llm': 'down',
-                    'msg': '桌宠/8788 不在线' + ('（%s）' % msg if msg else '')}
+                    'msg': '外部服务/8788 不在线' + ('（%s）' % msg if msg else '')}
         try:
             content = assistant_ops._llm_call(
                 [{'role': 'user', 'content': PREFILL_PROMPT % text8k}],
@@ -1610,7 +1610,7 @@ def api_trace_refile(body, confirm=False):
 def api_letters():
     """律师函台（批 39b）：台账行 ↔ 债务人夹 ↔ 发函进展 **三段联动**。
 
-    爸爸 2026-09-17 拍板 ③：**签收状态 / 后续跟进开受控回写**（走 ledger_ops 三重闸）。
+    用户 2026-09-17 拍板 ③：**签收状态 / 后续跟进开受控回写**（走 ledger_ops 三重闸）。
     认不出对应夹的行 → 明说「未认到夹」，绝不硬套。
     """
     items = []
@@ -1638,7 +1638,7 @@ def api_letters():
 def api_contracts():
     """合同审查业务线（批 52，只读，双源）——照律师函台先例。
 
-    ① 台账「合同审查」sheet（`ledger_ops.read_rows`；**表由爸爸在 WPS 手工建**，
+    ① 台账「合同审查」sheet（`ledger_ops.read_rows`；**表由用户在 WPS 手工建**，
        sheet 缺失时优雅返回空——页面给「怎么建表」指引，代码绝不代建/绝不写入）；
     ② `D:\\案件\\张律师\\合同审查\\` 横向素材夹扫描（夹不存在返回 exists=False，
        **不自动建**，页面给建夹指引文案）。
@@ -1713,7 +1713,7 @@ def _open_in_explorer(path, select=None):
             if not os.path.exists(sel):
                 return False, '要选中的文件不存在'
             # ⚠️⚠️ 2026-09-19 **实测对照结论（请勿再改回 explorer）**：
-            #   `Popen(['explorer', '/select,' + path])` → **不弹窗**（爸爸实测「没反应」）
+            #   `Popen(['explorer', '/select,' + path])` → **不弹窗**（用户实测「没反应」）
             #   `subprocess.run('explorer /select,...', shell=True)` → 同样不可靠
             #   `os.startfile(目录)` → **✅ 稳定弹窗**（三次对照实验确认）
             #   故：一律用 `os.startfile` 打开**文件所在目录**（深层子目录直接开该子目录，
@@ -1769,7 +1769,7 @@ def api_letter_preview_file(body):
             '.bmp': 'image/bmp', '.webp': 'image/webp'}.get(ext)
     kind = 'image' if mime else ''
     if not mime and ext == '.pdf':
-        # 批 46.6（爸爸拍板「全在页面内」）：PDF 也走页内——浏览器原生能渲染
+        # 批 46.6（用户拍板「全在页面内」）：PDF 也走页内——浏览器原生能渲染
         # data:application/pdf，用 <iframe> 内嵌，不依赖外部阅读器。
         mime, kind = 'application/pdf', 'pdf'
     if not mime:
@@ -1793,7 +1793,7 @@ def api_letter_preview_file(body):
 
 
 def api_letter_download(body):
-    r"""把案卷里的文件**以附件形式回给浏览器**（批 46.6，爸爸拍板「全在页面内」）。
+    r"""把案卷里的文件**以附件形式回给浏览器**（批 46.6，用户拍板「全在页面内」）。
 
     为什么需要：`os.startfile` 依赖外部程序 + 窗口层级不可控（本轮实踩：
     窗口确实开出来了、也没最小化，但用户看不到 → 反复「点了没反应」）。
@@ -1895,7 +1895,7 @@ def api_letter_file_view(q):
 
 
 def api_letter_open_file(body):
-    r"""用**默认程序打开文件本身**（批 46.3 爸爸要求）。
+    r"""用**默认程序打开文件本身**（批 46.3 用户要求）。
 
     与 `/api/letter/open_folder` 的区别：
       · open_folder：打开**资源管理器**定位到文件（选中高亮）——用于"我想看看这夹里有啥"
@@ -1934,7 +1934,7 @@ def api_letter_open_file(body):
 
 
 def api_letter_open_folder(body):
-    """律师函材料夹：在资源管理器中打开（批 46 爸爸要求）。
+    """律师函材料夹：在资源管理器中打开（批 46 用户要求）。
     body: {row?} 或 {folder?} 或 {select?}（文件名）
     - 给 row → 由台账行反查债务人夹
     - 给 folder → 直接打开该夹
@@ -1976,7 +1976,7 @@ def api_letter_rescan():
 def api_letter_folder_files(q):
     """单夹文件清单**实时**扫描（批 48）。q.folder = 债务人夹名（**纯名字，禁路径**）。
 
-    为什么加（爸爸 09-21 实踩）：① 行级「看文件」原先用进页时的 LETTER_ITEMS 缓存，
+    为什么加（用户 09-21 实踩）：① 行级「看文件」原先用进页时的 LETTER_ITEMS 缓存，
     新放进夹子的文件（如盖章扫描件）不显示；②「重新扫描」按钮只报数不刷新。
     → 看文件/函件入口改**点按时现扫**（毫秒级 walk），数据永远新鲜，无需建索引。
     """
@@ -2049,7 +2049,7 @@ def api_ems_upload(body):
     log('EMS_UPLOAD', '%s（%d KB）' % (os.path.basename(p), len(raw) // 1024))
     # 上传后**顺手识别**（省一次点击）；识别失败不阻断（图片已存好）
     r = ems_ops.recognize(p)
-    # 顺手给出**存放建议**（批 46.2：爸爸问「是自动匹配吗」→ 补上）
+    # 顺手给出**存放建议**（批 46.2：用户问「是自动匹配吗」→ 补上）
     sug = {}
     try:
         letters = api_letters()
@@ -2064,7 +2064,7 @@ def api_ems_upload(body):
 def api_letter_sign_records(body):
     r"""查某债务人夹下的**签收记录**（批 46.2）。
 
-    爸爸问「我原来律师函文件夹里存的 EMS 签收图怎么不见了」——其实一直在
+    用户问「我原来律师函文件夹里存的 EMS 签收图怎么不见了」——其实一直在
     （`委托人\律师函-福建闽兴VS陈飞鹏\律师函及签收记录\` 下 5 对「函 PDF + 签收图」），
     只是页面没归类展示。本接口按**目录名含「签收」**跨层级捞出。
     """
@@ -2137,7 +2137,7 @@ def api_travel():
 def api_scatter():
     """散件索引（批 36，只读）：律师函/合同/差旅发票/所函/介绍信/判决书/接收到的文件。
 
-    爸爸 2026-09-17 定调：这些横向目录**故意这么放**（方便找），不归拢；
+    用户 2026-09-17 定调：这些横向目录**故意这么放**（方便找），不归拢；
     本接口只把内容索引出来 + 标「疑似归属案件」「非经手」，一个文件都不动。
     """
     d = case_ops.scatter_index()
@@ -2256,7 +2256,7 @@ def api_scatter_intake(rel='', batch=False, confirm=False, case_name=''):
 def api_sohan_meta():
     """所函页元数据（只读）：模板状态 + 阶段下拉 + 默认承办律师 + 案件夹清单
 
-    批 39a 爸爸拍板：① 落点＝选定案卷 01-委托手续 ② 出具日期**留空**。
+    批 39a 用户拍板：① 落点＝选定案卷 01-委托手续 ② 出具日期**留空**。
     """
     ok, err = sohan_ops.template_ok()
     return {'template': sohan_ops.template_path(), 'template_ok': ok,
@@ -2355,7 +2355,7 @@ def api_schedule():
 
 # ---------------------------------------------------------------- 发票归案（批 30）
 #
-# 爸爸 2026-09-13 定：上传发票 → 本机识别 → 建议归案 → **他点确认才动**；
+# 用户 2026-09-13 定：上传发票 → 本机识别 → 建议归案 → **他点确认才动**；
 # 落点 = 案卷 `05-费用票据`（正本）+ 公共发票库按年月（副本）；**不写台账**。
 UPLOAD_DIR = os.environ.get('INVOICE_UPLOAD_DIR') or os.path.join(HERE, 'data', 'invoice_upload')
 UPLOAD_MAX_MB = int(os.environ.get('INVOICE_MAX_MB', '40'))
@@ -2421,7 +2421,7 @@ def _case_options():
 
 
 # ---------------------------------------------------------------- 归档区导入（批 39h）
-# 爸爸 2026-09-18：`批量催收件` / `差旅报销` 要「导入入口」——
+# 用户 2026-09-18：`批量催收件` / `差旅报销` 要「导入入口」——
 # 照批 30「上传发票 → 归案」同一模式：**暂存 → 人确认 → 落盘**，案卷不动直到确认。
 ARCHIVE_UPLOAD_DIR = os.environ.get('ARCHIVE_UPLOAD_DIR') or os.path.join(
     HERE, 'data', 'archive_upload')
@@ -2729,7 +2729,7 @@ def api_pending():
 # 智能提醒分析 + 对话。数据源 = 台账单文件（assistant_ops 内部锁死）；LLM = 本地池 8788。
 # 纪律：分析不写台账/案卷（只写 data\ai_reminders.json）；对话不落任何案件材料。
 
-_CHAT_LOCK = threading.Lock()      # 对话并发锁：同一时刻只跑一个（对齐桌宠 main.js chatBusy）
+_CHAT_LOCK = threading.Lock()      # 对话并发锁：同一时刻只跑一个（对齐外部服务 main.js chatBusy）
 _ASSIST_RUNNING = {'thread': None, 'started': 0}
 
 
@@ -2805,7 +2805,7 @@ def api_assistant_chat(q, apply=True):
         return {'error': '问题为空'}
     if len(q) > 2000:
         return {'error': '问题过长（>2000 字符）。台账查询不需要长文本；'
-                         '如需分析案件材料，请到煤球主会话（本地）。'}
+                         '如需分析案件材料，请到助手主会话（本地）。'}
     if not _CHAT_LOCK.acquire(blocking=False):
         return {'busy': True, 'ok': False, 'reply': '上一条还在思考，稍等一下喵'}
     try:
@@ -3724,7 +3724,7 @@ class Handler(BaseHTTPRequestHandler):
                 assistant_ops.clear_history(apply=True)
                 log('ASSISTANT_HISTORY_CLEAR', 'via web')
                 return self._send(200, {'dry_run': False, 'items': []})
-            # ---- 批 46：律师函材料夹 打开/重扫（爸爸要求「一键直达文件夹」）----
+            # ---- 批 46：律师函材料夹 打开/重扫（用户要求「一键直达文件夹」）----
             if u.path == '/api/letter/open_folder':
                 r = api_letter_open_folder(body)
                 return self._send(400 if r.get('error') else 200, r)

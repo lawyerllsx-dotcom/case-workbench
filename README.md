@@ -65,7 +65,7 @@ python app.py              # 打开 http://127.0.0.1:8899
 }
 ```
 
-只填你要用的列即可（缺的列在页面上显示为空，不会崩）。表头行数用 `ledger.data_start_row` 调（默认第 4 行起是数据）。
+**三个必填列**：`当前进度`、`进度日志`、`最新状态`——受控回写与「旧值留痕」依赖它们，缺了会在启动时报错（`verify.py` 会先提醒你）。其余列可缺，页面上显示为空。表头行数用 `ledger.data_start_row` 调（默认第 4 行起是数据）。
 
 改完自查：
 
@@ -78,7 +78,7 @@ python ledger_ops.py check # 台账体检：路径 / 锁 / sheet / 列映射
 
 ## 八条写死在代码里的纪律
 
-这些不是文档承诺，是可验证的行为（配套 767 个断言 + 19 页渲染冒烟）：
+这些不是文档承诺，是可验证的行为（配套 20 个接口测试 + 19 页渲染冒烟，实际数字以 `python run_all_tests.py` 输出为准）：
 
 1. **一切写操作默认 dry-run**，要显式 `--apply` 或 `"confirm": true` 才落盘。
 2. **绝不删除用户数据**：台账只追加/替换目标格；案卷只 `move` / `makedirs`。
@@ -121,11 +121,13 @@ templates/             文书模板（自备）
 
 ## 已知限制
 
-- **示例数据下 6 项前端冒烟会 SKIP**（系列案总夹、律师函签收按钮、散件入库入口等需要真实数据形态才渲染）。跑 `python smoke_views.py --demo` 可见；接真实台账后应为 PASS。
-- **`smoke_views.py` 需要 Node**（用 Node 执行前端函数做渲染断言）。
+- **示例数据下 6 项前端冒烟会 SKIP**（系列案总夹、律师函签收按钮、散件入库入口等需要真实数据形态才渲染）。实际输出存于 [docs/smoke_baseline.txt](docs/smoke_baseline.txt)，接真实台账后应为 PASS。
+- **模板要自备**：仓库不带所内文书模板，`templates/委托材料/` 与 `templates/所函模板.docx` 需按 [templates/README.md](templates/README.md) 放自己的；缺失时对应页面提示不可用（相关测试标 SKIP）。
+- **`smoke_views.py` 需要 Node**；`test_api_binding.py` 需要 PyMuPDF、`test_trace_ui.py` 需要 playwright——没装会 **SKIP 而不是 FAIL**。
 - **Windows 优先**：toast 通知、桌面快捷方式、`os.startfile` 是 Windows 实现；其他系统能用主界面，通知类功能降级。
 - **不替代备份**：所有闸门都假设你另有备份（工作台自己也会在写前备份）。
 - **不做业务判断**：它只做归类、取数、留痕；案号、当事人、金额的准确性由人核验。
+- **隐私自检带基线**：`sanitize.baseline.json` 里 39 条是**已人工确认的示例数据**（假路径、假案号），不是真实信息；新增命中才报错。
 
 ---
 

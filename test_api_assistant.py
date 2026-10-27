@@ -12,7 +12,7 @@
 
 隔离（关键）：
   · ASSISTANT_DATA_DIR → 临时目录（**绝不写真实 data\\**）
-  · ASSISTANT_NO_MIGRATE=1（防把桌宠真历史拖进来）
+  · ASSISTANT_NO_MIGRATE=1（防把外部服务真历史拖进来）
   · LEDGER_PATH → 临时合成台账（LLM 提示词取台账；不给真台账）
   · **不打真 LLM**：起子进程时设 ASSISTANT_MOCK_LLM=1 → assistant_ops 走桩，
     全部断言零积分消耗、零外网。

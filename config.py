@@ -29,6 +29,8 @@ DEFAULTS = {
         'db': 'data/workbench.db',
         'db_backup': 'demo/备份/工作台',
         'dup_out': 'docs/dup_groups.md',
+        'batch_dir': 'demo/批量文书',
+        'batch_backup': 'demo/备份/批量文书',
     },
     'ledger': {
         'data_start_row': 4,
@@ -39,9 +41,11 @@ DEFAULTS = {
     },
     'lawyer': {'name': '张三', 'phone': '', 'license': '', 'firm': '', 'address': '',
                'default_court': ''},
-    'llm': {'base_url': '', 'model': '', 'api_key': ''},
+    'llm': {'base_url': '', 'model': '', 'api_key_file': ''},
     'ocr': {'enabled': False, 'python': '', 'script': ''},
-    'notification': {'bubble_port': 7777},
+    'wiki': {'root': '', 'case_dir': '案件'},
+    'sohan': {'template_doc': ''},
+    'notification': {'bubble_port': 7777, 'webhook_url': ''},
 }
 
 

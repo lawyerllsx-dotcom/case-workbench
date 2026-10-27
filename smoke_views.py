@@ -2,7 +2,7 @@
 """smoke_views.py — 法律工作台「前端页面渲染」冒烟测试（2026-09-12 新增）
 
 背景：阶段 3 的自测只覆盖**后端 API 断言**，前端七个页签的渲染从未被验证过 →
-2026-09-12 爸爸点「案件」「费用跟踪」两页白屏，暴露 `forEach(...).join('')` 缺陷
+2026-09-12 用户点「案件」「费用跟踪」两页白屏，暴露 `forEach(...).join('')` 缺陷
 （`forEach` 返回 undefined，再 `.join` 即 TypeError）。
 
 本工具用**本地 Node** 在无浏览器环境下真实执行 `static/app.js` 里的 VIEWS 函数，
@@ -226,7 +226,7 @@ const PROBE = [
   "          if (String(h).indexOf('id=\"' + fid + '\"') < 0) throw new Error('新增发函对象缺字段 ' + fid);",
   "        }",
   "        console.log('CHECK letters 新增发函对象入口 OK（7 字段 + letterAddDo，批 41）');",
-  "        // 批 46：打开本地文件夹 + 重扫 + EMS 导入（爸爸要求「一键直达」）",
+  "        // 批 46：打开本地文件夹 + 重扫 + EMS 导入（用户要求「一键直达」）",
   "        if (typeof window.letterOpenRoot !== 'function') throw new Error('缺 letterOpenRoot');",
   "        if (typeof window.letterOpenRow !== 'function') throw new Error('缺 letterOpenRow');",
   "        // 批 46.6：letterOpenFile 已删（死代码）——改为验页内操作函数齐备（见下方「文件操作全在页面内」断言）",
@@ -272,7 +272,7 @@ const PROBE = [
   "          const r1 = (global.__REQ || []).map(r => r.url).join('|');",
   "          if (r1.indexOf('/api/letter/sign_records') < 0) throw new Error('点「签收记录」未发请求：' + r1);",
   "          // 批 48 反转：「看文件」必须**实时重发** folder_files 请求（原走",
-  "          // LETTER_ITEMS 缓存 → 新放的盖章扫描件不显示，爸爸 09-21 实踩）。",
+  "          // LETTER_ITEMS 缓存 → 新放的盖章扫描件不显示，用户 09-21 实踩）。",
   "          global.__REQ.length = 0;",
   "          await window.letterShowFiles(_old.row, null);",
   "          const r2 = (global.__REQ || []).map(r => r.url).join('|');",
@@ -575,7 +575,7 @@ const PROBE = [
   "        console.log('CHECK sohan 委托手续套件 OK（6 件模板 + 解析 2 例 + 预览 6 件）');",
   "      }",
   "      if (n === 'assistant') {",
-  "        // 批 C/批 45：工作台助理页（对话 + 首页提醒卡；迁移自桌宠 case_chat / case_remind）",
+  "        // 批 C/批 45：工作台助理页（对话 + 首页提醒卡；迁移自外部服务 case_chat / case_remind）",
   "        const page = String(h);",
   "        for (const fid of ['asFlow', 'asInput', 'asSend', 'asTip']) {",
   "          if (page.indexOf('id=\"' + fid + '\"') < 0) throw new Error('助理页缺 ' + fid);",

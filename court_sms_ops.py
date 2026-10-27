@@ -42,7 +42,7 @@ _OPENER_FACTORY = _default_opener
 
 def normalize_case_no(s):
     r"""案号归一化：去所有空白 + 全角括号 → 半角。比对两边都归一，否则
-    「（2026）闽0211民初329号」与「(2026)闽 0211 民初 329 号」会匹配不上。"""
+    「（2099）某0000民初0号」与「(2099)某 0000 民初 0 号」会匹配不上。"""
     return ''.join(c for c in str(s or '') if not c.isspace()) \
         .replace('（', '(').replace('）', ')')
 

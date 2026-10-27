@@ -100,6 +100,12 @@ def check_ledger():
             else:
                 warn('列映射可能不对：表头第 %d 行只命中 %d 个字段名，请核对 ledger.cols_case'
                      % (hdr_row, hit))
+            must = ('当前进度', '进度日志', '最新状态')
+            miss = [k for k in must if k not in cols or k not in names]
+            if miss:
+                bad('必填列缺失或表头对不上：%s（受控回写依赖这三列）' % '/'.join(miss))
+            else:
+                ok('三个必填列就位：%s' % '/'.join(must))
     finally:
         wb.close()
 

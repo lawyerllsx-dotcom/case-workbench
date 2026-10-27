@@ -9,7 +9,7 @@
 
 | 事实 | 值 |
 |---|---|
-| 入口 | `app.py`（113 条路由，`do_GET` / `do_POST` 两个大分派） |
+| 入口 | `app.py`（约 110 条 API 路由，`do_GET` / `do_POST` 两个大分派） |
 | 前端 | `static/app.js`（全部视图函数）+ `static/index.html`（模板与 CSS 变量） |
 | 数据事实源 | **台账 xlsx**（唯一真相），页面只是视图 |
 | 自建库 | `data/workbench.db`（SQLite：任务、日程、写作项目、执行款） |

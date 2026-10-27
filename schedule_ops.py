@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""日程（手工条目）—— 爸爸 2026-09-17 诉求「日程记录及提醒」。
+"""日程（手工条目）—— 用户 2026-09-17 诉求「日程记录及提醒」。
 
 与 `deadline_ops` 的分工（**两套数据，不混**）：
   · `deadlines.json`  = **台账派生**（只读台账 J/H/X 列抽出，人不能直接编辑，改了会被下次抽取覆盖）
@@ -10,7 +10,7 @@
 纪律：
   · 只增删改本文件；不碰台账、不碰案卷。
   · 删除是软删（标 cancelled + 留痕），保留可追溯性。
-  · 桌宠提醒复用 `deadline_check.py` 的 /bubble 通道（不另开通道，避免抢写）。
+  · 外部服务提醒复用 `deadline_check.py` 的 /bubble 通道（不另开通道，避免抢写）。
 """
 import argparse
 import hashlib
@@ -173,7 +173,7 @@ def due_for_reminder(today=None):
 
 
 def build_reminder_text(items, today=None):
-    """组装桌宠气泡文本；无待提醒 → None。"""
+    """组装外部服务气泡文本；无待提醒 → None。"""
     if not items:
         return None
     today = today or date.today()

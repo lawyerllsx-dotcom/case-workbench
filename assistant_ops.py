@@ -3,8 +3,8 @@
 r"""
 assistant_ops.py — 法律工作台 · 台账助理引擎（智能提醒 + 对话）
 
-来源：从桌宠 case_remind.py / case_chat.py 迁移（2026-09-18 爸爸拍板退役桌宠侧，
-      功能并入工作台）。规划见 docs\桌宠案件功能迁移工作台-技术规划-20260918.md。
+来源：从外部服务 case_remind.py / case_chat.py 迁移（2026-09-18 用户拍板退役外部服务侧，
+      功能并入工作台）。规划见 docs\外部服务案件功能迁移工作台-技术规划-20260918.md。
 
 职责：
   1) 智能提醒分析：全量台账 → 本地积分池（wb-proxy 8788）LLM → data\ai_reminders.json
@@ -16,7 +16,7 @@ assistant_ops.py — 法律工作台 · 台账助理引擎（智能提醒 + 对�
   - 数据源锁死台账单文件（ledger_ops.ledger_path()），禁止任何 glob/附件/raw/文书目录扩展
   - 台账只读：copy 到 %TEMP%（PID 命名）再读，try/finally 清理，原文件零接触
   - LLM 输出仅作建议，宁漏报不错报；案号/日期不得编造
-  - 案件本体（证据/文书草稿）绝不外发；台账数据经本地池外发 = 爸爸 2026-09-02 已解禁口径
+  - 案件本体（证据/文书草稿）绝不外发；台账数据经本地池外发 = 用户 2026-09-02 已解禁口径
   - 密钥运行时读 wb-proxy\api-key.txt，绝不硬编码/不落日志
 
 用法：
@@ -66,7 +66,7 @@ HISTORY_PATH = _d('assistant_history.json')
 IGNORE_PATH = _d('ai_remind_ignore.json')
 STATE_PATH = _d('assistant_state.json')
 
-# 迁移源（桌宠运行时；存在则首次拷入，原文件不删）。
+# 迁移源（外部服务运行时；存在则首次拷入，原文件不删）。
 # ASSISTANT_NO_MIGRATE=1 可关闭自动迁移（测试隔离用，防把真历史拖进临时目录）。
 PETDEX_HISTORY = os.path.expanduser('~/.petdex/runtime/case-chat-history.json')
 PETDEX_IGNORE = os.path.expanduser('~/.petdex/runtime/case-ignore.json')
@@ -78,7 +78,7 @@ LOCAL_PROXY_BASE = _config.get('llm.base_url', '') or ''
 API_KEY_FILE = _config.get('llm.api_key_file', '') or ''
 MODEL = _config.get('llm.model', '') or ''
 LLM_MAX_REMINDERS = 6
-# 对话历史窗口（2026-09-19 爸爸拍板 6 → 12 轮）：原 6 轮问长一点就滑出窗口「忘了前面」。
+# 对话历史窗口（2026-09-19 用户拍板 6 → 12 轮）：原 6 轮问长一点就滑出窗口「忘了前面」。
 # 12 轮 ≈ 24 条消息；按中文约 30-60 字/条估算 ≈ 1-2K token，对上下文预算影响可接受。
 MAX_HISTORY_TURNS = 12
 ANALYZE_TIMEOUT = 120
@@ -92,7 +92,7 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-# ⚠️ 工作台进程环境与桌宠 spawn 环境不同：本机存在 HTTP_PROXY 时，urlopen 连
+# ⚠️ 工作台进程环境与外部服务 spawn 环境不同：本机存在 HTTP_PROXY 时，urlopen 连
 #    127.0.0.1 也会走代理 → 502。故 **禁重定向 + 绕代理 双保险**（规划 §四.4）。
 #    注：空 proxies 的 ProxyHandler 会被 build_opener 优化为 UnknownHandler（即
 #    "不做代理处理"），链上不再出现 ProxyHandler 类——这正是绕过生效的标志；
@@ -151,7 +151,7 @@ def _load_json(path, default):
 # ---------------------------------------------------------------- 忽略名单 / 历史
 
 def load_ignore(apply=False):
-    """忽略名单（关键词数组）。首次调用若工作台侧不存在而桌宠侧存在 → 迁移拷入。"""
+    """忽略名单（关键词数组）。首次调用若工作台侧不存在而外部服务侧存在 → 迁移拷入。"""
     if not NO_MIGRATE and not os.path.isfile(IGNORE_PATH) and os.path.isfile(PETDEX_IGNORE):
         arr = _load_json(PETDEX_IGNORE, None)
         if isinstance(arr, list) and apply:
@@ -194,7 +194,7 @@ def ignore_remove(word, apply=False):
 
 
 def load_history(apply=False):
-    """对话历史（最近 6 轮 = 12 条）。首次自动从桌宠侧迁移。"""
+    """对话历史（最近 6 轮 = 12 条）。首次自动从外部服务侧迁移。"""
     if not NO_MIGRATE and not os.path.isfile(HISTORY_PATH) and os.path.isfile(PETDEX_HISTORY):
         arr = _load_json(PETDEX_HISTORY, None)
         if isinstance(arr, list) and apply:
@@ -708,7 +708,7 @@ def _build_workbench_blocks(today):
         blocks.append('== 工作台·日程 ==\n（读取失败：%s）' % str(e)[:80])
 
     # ── 客户扩展信息 ────────────────────────────────────────────────────
-    # ⚠️ 2026-09-19 爸爸拍板：**电话/微信/联系人一律不喂**（个人信息，不上行）。
+    # ⚠️ 2026-09-19 用户拍板：**电话/微信/联系人一律不喂**（个人信息，不上行）。
     #    只喂「客户名 + 备注」——备注可能含案件背景，属台账同源信息。
     try:
         import tasks_ops
@@ -858,7 +858,7 @@ ANALYZE_FORMAT = (
     "45 字限额含案名。\n" % LLM_MAX_REMINDERS
 )
 CHAT_SYSTEM = (
-    "你是煤球——法律工作台助理，服务对象是实习律师（称呼'爸爸'）。"
+    "你是助手——法律工作台助理，服务对象是实习律师（称呼'用户'）。"
     "数据来源是**本机法律工作台的本地数据**，分为六块："
     "①案件台账（案件名/案号/状态/开庭/进度/日志/保全/尾款/合同/费用/承办律师等）"
     "②工作台任务  ③期限表  ④日程表  ⑤案卷目录索引  ⑥客户备注。"
@@ -870,7 +870,7 @@ CHAT_SYSTEM = (
     "不要只报案号尾号。"
     "【边界】案卷里**文件的正文内容**（起诉状/证据/判决书等）你看不到，"
     "只有目录索引；问这类内容要明说'我看不到文件正文，只知目录结构'，"
-    "并建议到煤球主会话（案件工作区）查阅。"
+    "并建议到助手主会话（案件工作区）查阅。"
     "【🔴 最重要的纪律：你是只读的，没有任何写入能力】"
     "你**只能读数据、回答、给建议**。你**无法**修改台账、无法登记签收状态、"
     "无法关闭任务、无法改期限、无法写任何文件——这些功能你**根本没有**。"
@@ -882,9 +882,9 @@ CHAT_SYSTEM = (
     "「新增期限 → 请到『期限与日历』页新增」。"
     "可以帮他把**要填的内容整理好**（如『单号 EMS123... 签收时间 X 月 X 日』），"
     "让他复制过去，但**必须说清这不是我登记的**。"
-    "涉及法律策略判断时，提示'建议在煤球主会话深入讨论'。"
+    "涉及法律策略判断时，提示'建议在助手主会话深入讨论'。"
     "【记忆】你只有最近若干轮对话的短期记忆，更早的记不住；"
-    "若爸爸问的是本轮上下文之外的历史对话，如实说'更早的对话我记不住了'，不要猜。"
+    "若用户问的是本轮上下文之外的历史对话，如实说'更早的对话我记不住了'，不要猜。"
     "【摘要纪律】回答只给关键信息：先给结论/数字/去处，再给必要的一句依据；"
     "不要复述推导过程、不要长篇解释、不客套；清单类回答用短句直列（批 66）。"
     "【语气】不确定就说不确定；做不到就说做不到。**宁可显得笨，也不假装能做到**——"
@@ -997,7 +997,7 @@ def chat(q, apply=False, path=None):
         return {'ok': False, 'reply': '问题为空'}
     if len(q) > 2000:
         return {'ok': False, 'reply': ('⚠️ 问题过长（>2000 字符）。台账查询不需要长文本；'
-                                       '如需分析案件材料，请到煤球主会话（本地）。')}
+                                       '如需分析案件材料，请到助手主会话（本地）。')}
     try:
         context = build_ledger_context(path)
     except Exception as e:                                   # noqa: BLE001
@@ -1211,7 +1211,7 @@ def selftest():
 
     # ---- 工作台助理扩容（2026-09-19 B 方案）
     chk('历史窗口 12 轮', MAX_HISTORY_TURNS == 12)
-    # 🔴 只读纪律（批 45 爸爸拍板 A 方案）：助手绝不能声称能写数据
+    # 🔴 只读纪律（批 45 用户拍板 A 方案）：助手绝不能声称能写数据
     #    （实踩：模型看到任务「登记签收状态」，主动说「把 EMS 单号给我我登记」= 幻觉功能）
     chk('提示词声明只读', '你是只读的' in CHAT_SYSTEM)
     chk('提示词禁「我帮你登记」类话术', '绝对不要' in CHAT_SYSTEM and '我帮你登记' in CHAT_SYSTEM)

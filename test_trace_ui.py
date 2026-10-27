@@ -3,7 +3,11 @@
 import json, os, urllib.request
 
 os.environ.setdefault('PLAYWRIGHT_BROWSERS_PATH', '0')
-from playwright.sync_api import sync_playwright   # noqa: E402
+try:
+    from playwright.sync_api import sync_playwright   # noqa: E402
+except ImportError:
+    print('SKIP 未安装 playwright（pip install playwright && playwright install chromium）')
+    raise SystemExit(0)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tmp', 'shots-v39d')
 os.makedirs(OUT, exist_ok=True)

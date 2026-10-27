@@ -183,13 +183,13 @@ def run():
         window = webview.create_window(
             WIN_TITLE, url0,
             width=WIN_SIZE[0], height=WIN_SIZE[1], min_size=MIN_SIZE,
-            maximized=True,                              # 打开即最大化（爸爸拍板）
+            maximized=True,                              # 打开即最大化（用户拍板）
             # 批 57b：启动底色对齐页面 --paper（oklch(0.978 0.008 247) 换算值；
             # 原暖米色属批 57 前旧皮肤，漏改至此）
             background_color='#F4F8FD')
         threading.Thread(target=_ensure_nav, args=(window, url0), daemon=True).start()
         webview.start(**start_kw)
-        # ✕ 关窗后静默转托盘驻留（爸爸拍板：不弹气泡）
+        # ✕ 关窗后静默转托盘驻留（用户拍板：不弹气泡）
         # 托盘驻留：等「打开」（托盘菜单 或 新实例 SetEvent）或「退出」
         while state['cmd'] is None:
             r = ctypes.windll.kernel32.WaitForSingleObject(show_event, 200)

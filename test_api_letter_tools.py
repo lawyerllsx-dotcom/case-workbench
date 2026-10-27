@@ -99,7 +99,7 @@ def main():
        bool(A.api_letter_preview_file({'path': r'C:\Windows\notepad.exe'}).get('error')))
     ck('不存在的图 → error',
        bool(A.api_letter_preview_file({'folder': '委托人', 'path': '__nope__.jpg'}).get('error')))
-    # 批 46.6：PDF 改为**支持页内预览**（爸爸拍板「全在页面内」）——
+    # 批 46.6：PDF 改为**支持页内预览**（用户拍板「全在页面内」）——
     # 原断言「非图片 → error」已过期，改为验证 PDF 放行且 kind=pdf。
     _pdf = A.api_letter_preview_file({'folder': '委托人',
         'path': r'律师函-福建闽兴VS陈飞鹏\律师函及签收记录\徐俊帆律师函（签收）.pdf'})
