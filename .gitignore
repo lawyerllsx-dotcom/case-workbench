@@ -17,3 +17,4 @@ venv/
 demo/.seed-backup-*/
 tmp_test_result.json
 test-results/
+tmp/
