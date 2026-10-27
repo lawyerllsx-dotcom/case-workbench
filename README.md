@@ -30,15 +30,19 @@
 
 需要 Python 3.10+。
 
-**Windows 双击 `start.bat`** 即可（自检 → 缺数据就生成 → 起服务）。
-macOS / Linux 用 `./start.sh`，或手动三条：
+**Windows 双击 `start.bat`**；macOS / Linux 用 `./start.sh`。脚本会「生成示例数据 → 起服务」，全幂等。
+
+手动三步：
 
 ```bash
 pip install -r requirements.txt
+python demo_seed.py        # 生成虚构的台账与案卷（3 个假案件），已存在则跳过
 python verify.py           # 自检：依赖 / 配置 / 台账列映射 / 案卷 / 端口
-python demo_seed.py        # 生成一份虚构的演示台账与案卷（3 个假案件）
 python app.py              # 打开 http://127.0.0.1:8899
 ```
+
+> 顺序很重要：**先 `demo_seed.py` 再 `verify.py`**，否则自检会提示「待生成」——那是首次使用的正常现象，不是装坏了。
+> `verify.py` 退出码 1 才代表真有问题（配置错、列映射对不上）。
 
 看到首页「3 个案件 / 应收 4.7 万」就是跑通了。演示数据全部虚构，可以随便点、随便改。
 

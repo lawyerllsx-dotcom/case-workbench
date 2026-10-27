@@ -57,20 +57,29 @@ def check_config():
         ok('配置：使用本机 workbench.config.json')
     else:
         warn('配置：未发现 workbench.config.json，正在用示例配置（demo 数据可直接跑）')
+    demo_dir = os.path.join(config.BASE_DIR, 'demo')
+    demo_ready = os.path.isdir(demo_dir)
     for key in ('ledger', 'case_root', 'archive_root', 'ledger_backup_root'):
         p = config.abspath(config.get('paths.' + key, ''))
         if not p:
             bad('配置 paths.%s 为空' % key)
         elif os.path.exists(p):
             ok('paths.%s 存在：%s' % (key, p))
+        elif ('demo' in p.split(os.sep)) and not demo_ready:
+            # 首次使用还没生成示例数据：这不是错误，别让新人和 agent 以为装坏了
+            warn('paths.%s 待生成（首次使用正常现象）：%s' % (key, p))
         else:
-            warn('paths.%s 不存在（跑 python demo_seed.py 可生成示例）：%s' % (key, p))
+            warn('paths.%s 不存在：%s' % (key, p))
 
 
 def check_ledger():
     p = config.abspath(config.get('paths.ledger', ''))
     if not os.path.isfile(p):
-        bad('台账文件不存在：%s' % p)
+        if 'demo' in p.split(os.sep) and not os.path.isdir(
+                os.path.join(config.BASE_DIR, 'demo')):
+            warn('台账待生成（首次使用正常现象）：%s' % p)
+        else:
+            bad('台账文件不存在：%s' % p)
         return
     try:
         from openpyxl import load_workbook
@@ -113,7 +122,11 @@ def check_ledger():
 def check_cases():
     root = config.abspath(config.get('paths.case_root', ''))
     if not os.path.isdir(root):
-        bad('案卷根不存在：%s' % root)
+        if 'demo' in root.split(os.sep) and not os.path.isdir(
+                os.path.join(config.BASE_DIR, 'demo')):
+            warn('案卷根待生成（首次使用正常现象）：%s' % root)
+        else:
+            bad('案卷根不存在：%s' % root)
         return
     subs = [d for d in os.listdir(root) if os.path.isdir(os.path.join(root, d))]
     if not subs:
@@ -154,10 +167,11 @@ def main():
     print('\n结果：%d 项通过 / %d 项提醒 / %d 项阻断' % (len(OK), len(WARN), len(BAD)))
     if BAD:
         print('\n下一步：')
-        if any('demo_seed' in m or '不存在' in m for m in BAD):
-            print('  python demo_seed.py     # 生成示例数据')
+        print('  python demo_seed.py     # 生成示例数据')
         print('  python config.py        # 看当前生效的路径')
         return 1
+    if any('待生成' in m for m in WARN):
+        print('\n下一步： python demo_seed.py   # 生成示例数据后即可启动')
     print('\n可以启动了： python app.py')
     return 0
 

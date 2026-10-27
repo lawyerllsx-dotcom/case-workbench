@@ -7,8 +7,7 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-python verify.py
-if errorlevel 1 python demo_seed.py
+python demo_seed.py
 echo.
 echo Starting workbench at http://127.0.0.1:8899  (Ctrl+C to stop)
 python app.py
