@@ -1,0 +1,24 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  static:
+    name: 语法 / 隐私 / 演示数据
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 安装依赖
+        run: pip install openpyxl
+      - name: 语法检查
+        run: python -m compileall -q .
+      - name: 隐私自检（基线之外零新增）
+        run: python sanitize_check.py
+      - name: 生成演示数据
+        run: python demo_seed.py
+      - name: 自检
+        run: python verify.py

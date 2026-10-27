@@ -11,8 +11,8 @@ import shutil
 import sys
 import tempfile
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, HERE)
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
 
 TMP = tempfile.mkdtemp(prefix='pw38_')
 os.environ['WORKBENCH_DB'] = os.path.join(TMP, 'data', 'workbench.db')

@@ -7,9 +7,9 @@ import subprocess
 import sys
 import time
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.abspath(__file__))   # 本文件位于项目根
 PY = sys.executable
-files = sorted(glob.glob(os.path.join(ROOT, 'test_*.py')))
+files = sorted(glob.glob(os.path.join(ROOT, 'tests', 'test_*.py')))
 results = []
 
 for p in files:

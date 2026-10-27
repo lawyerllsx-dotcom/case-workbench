@@ -12,7 +12,7 @@ os.makedirs(CASE_ROOT, exist_ok=True)
 os.environ['CASE_OPS_ROOT'] = CASE_ROOT
 os.environ['CASE_OPS_BIZ_ROOT'] = os.path.join(TMP, '张律师')
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import case_ops          # noqa: E402
 
 total, fails = [], []

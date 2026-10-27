@@ -25,8 +25,9 @@ os.environ['WORKBENCH_BACKUP_DIR'] = os.path.join(TMP, 'wbbak')
 os.environ['LEDGER_PATH'] = os.path.join(TMP, 'fake_ledger.xlsx')
 os.environ['LEDGER_BACKUP_ROOT'] = os.path.join(TMP, 'ledbak')
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
+sys.path.insert(0, ROOT)
 
 fails, total = [], []
 

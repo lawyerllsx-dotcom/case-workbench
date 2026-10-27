@@ -20,8 +20,9 @@ import tempfile
 import zipfile
 
 TMP = tempfile.mkdtemp(prefix='wb_comm_test_')
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
+sys.path.insert(0, ROOT)
 
 fails, total = [], []
 
@@ -34,7 +35,7 @@ def ck(name, cond):
 
 
 def main():
-    _tpl = os.path.join(HERE, 'templates', '委托材料')
+    _tpl = os.path.join(ROOT, 'templates', '委托材料')
     _n = len([f for f in os.listdir(_tpl) if f.endswith('.docx') and not f.startswith('_')]) \
         if os.path.isdir(_tpl) else 0
     if _n < 6:

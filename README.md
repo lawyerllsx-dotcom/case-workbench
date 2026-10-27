@@ -1,5 +1,8 @@
 # 法律工作台（case-workbench）
 
+[![ci](https://github.com/lawyerllsx-dotcom/case-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/lawyerllsx-dotcom/case-workbench/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 **一个跑在浏览器里的本地案件工作台**：台账看板、案卷立卷、期限提醒、律师函与委托手续、收件箱入库——全部在本机，零外网、零账号、零云依赖。
 
 > 目标不是做「又一套律所 SaaS」，而是把一位诉讼律师日常真正重复的几十个动作，收进一个能看懂、能改、能拆的本地工具里。
@@ -26,6 +29,9 @@
 ## 30 秒跑起来
 
 需要 Python 3.10+。
+
+**Windows 双击 `start.bat`** 即可（自检 → 缺数据就生成 → 起服务）。
+macOS / Linux 用 `./start.sh`，或手动三条：
 
 ```bash
 pip install -r requirements.txt
@@ -99,6 +105,7 @@ python ledger_ops.py check # 台账体检：路径 / 锁 / sheet / 列映射
 
 ```
 app.py                 HTTP 服务与路由（stdlib http.server，无框架）
+config.py              配置加载（路径 / 台账列映射 / 状态池）
 ledger_ops.py          台账读写 + 受控回写（五重闸都在这里）
 case_ops.py            立卷 / 收件箱入库 / 归档 / 业务线扫描
 deadline_ops.py        期限与保全窗口
@@ -106,8 +113,27 @@ assistant_ops.py       工作台助理（可选：需要 OpenAI 兼容端点）
 ocr_ops.py             本地 OCR 通道（可选：需要自备 PaddleOCR）
 court_sms_ops.py       法院短信 → 文书拉取（可选）
 static/                前端（原生 JS，无构建、无 CDN）
-templates/             文书模板（自备）
+templates/             文书模板（自带骨架版，可换自己的）
+tests/                 20 个接口回归（python run_all_tests.py）
+docs/                  集成指南 / 路线图 / 截图 / 冒烟基线
+extras/                作者环境专用工具（迁移、快捷方式等，仅供参考）
+.github/               CI 与 issue 模板
+demo_seed.py           示例数据生成器
+verify.py              一键自检
+sanitize_check.py      隐私自检（基线之外零新增）
 ```
+
+**常用命令**
+
+| 命令 | 作用 |
+|---|---|
+| `python verify.py` | 环境自检（依赖/配置/台账/案卷/端口） |
+| `python demo_seed.py` | 生成演示数据（幂等，`--force` 重建） |
+| `python app.py` | 启动（默认 8899，`--port` 改） |
+| `python run_all_tests.py` | 20 个接口回归 |
+| `python smoke_views.py --demo` | 19 页前端渲染冒烟（需 Node） |
+| `python sanitize_check.py` | 隐私自检 |
+| `make check / test / smoke` | 上面几条的快捷方式 |
 ---
 
 ## 可选组件（不配也能用）

@@ -10,8 +10,8 @@ import shutil
 import sys
 import tempfile
 
-HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, HERE)
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
 
 TMP = tempfile.mkdtemp(prefix='p39b_ledger_')
 LEDGER = os.path.join(TMP, '合成台账.xlsx')

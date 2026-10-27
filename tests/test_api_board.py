@@ -13,8 +13,9 @@ r"""test_api_board.py — 看板泳道接口回归（批 50，2026-10-09）
 import os
 import sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
+sys.path.insert(0, ROOT)
 
 fails, total = [], []
 

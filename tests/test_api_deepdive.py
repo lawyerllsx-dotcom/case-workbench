@@ -16,8 +16,9 @@ import shutil
 import sys
 import tempfile
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
+sys.path.insert(0, ROOT)
 
 fails, total = [], []
 

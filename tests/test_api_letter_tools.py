@@ -13,8 +13,9 @@ r"""test_api_letter_tools.py — 律师函页工具接口回归（批 46，2026-
 import os
 import sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
+sys.path.insert(0, ROOT)
 
 fails, total = [], []
 

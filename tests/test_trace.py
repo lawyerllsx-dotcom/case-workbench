@@ -19,8 +19,9 @@ import time
 import urllib.parse
 import urllib.request
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
+sys.path.insert(0, ROOT)
 
 TMP = tempfile.mkdtemp(prefix='trace_e2e_')
 CASE_ROOT = os.path.join(TMP, 'A个案')

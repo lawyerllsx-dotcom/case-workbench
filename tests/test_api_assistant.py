@@ -28,7 +28,8 @@ import time
 import urllib.error
 import urllib.request
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
 PY = sys.executable
 PORT = 8813
 BASE = 'http://127.0.0.1:%d' % PORT
@@ -95,7 +96,7 @@ def make_mock_assistant(mock_text):
         '    return MOCK_TEXT          # 契约：返回 content 字符串\n'
         'A._llm_call = _fake_call\n'
         'A.llm_reachable = lambda: (True, "mock")\n'
-    ) % (HERE, mock_text)
+    ) % (ROOT, mock_text)
     p = os.path.join(TMP, 'assistant_mock.py')
     io.open(p, 'w', encoding='utf-8', newline='\n').write(src)
     return p
@@ -114,10 +115,10 @@ def start(mock_file):
     env['WORKBENCH_DB'] = os.path.join(TMP, 'workbench.db')
     env['CASE_OPS_ROOT'] = os.path.join(TMP, 'cases')
     env['WIKI_ROOT'] = os.path.join(TMP, 'wiki')
-    logf = open(os.path.join(HERE, 'app.out.log'), 'a', encoding='utf-8', buffering=1)
-    subprocess.Popen([PY, '-u', os.path.join(HERE, 'app.py'),
+    logf = open(os.path.join(ROOT, 'app.out.log'), 'a', encoding='utf-8', buffering=1)
+    subprocess.Popen([PY, '-u', os.path.join(ROOT, 'app.py'),
                       '--port', str(PORT), '--idle-exit', '0'],
-                     cwd=HERE, env=env, stdout=logf, stderr=subprocess.STDOUT,
+                     cwd=ROOT, env=env, stdout=logf, stderr=subprocess.STDOUT,
                      stdin=subprocess.DEVNULL,
                      creationflags=subprocess.DETACHED_PROCESS, close_fds=True)
     for _ in range(60):

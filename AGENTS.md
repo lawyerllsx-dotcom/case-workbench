@@ -28,6 +28,8 @@ assistant_ops.py AI 助理（可选，需 OpenAI 兼容端点）
 ocr_ops.py       本地 OCR 通道（可选）
 court_sms_ops.py 法院短信拉文书（可选）
 static/app.js    所有页面渲染与交互
+tests/           20 个接口回归（每个文件独立起服务 + 临时目录）
+config.py        配置加载（改路径/列映射都在这里）
 ```
 
 ## 二、五条硬红线（违反即回滚）
@@ -57,7 +59,7 @@ python smoke_views.py --demo       # 前端 19 页渲染（13 PASS + 6 SKIP 为�
 python ledger_ops.py selftest      # 台账库回归（改了 ledger_ops 才需要）
 ```
 
-改动涉及接口时，跑对应 `test_api_*.py`；`run_all_tests.py` 可一次跑完（较慢）。
+改动涉及接口时，跑 `tests/` 下对应的 `test_api_*.py`；`python run_all_tests.py` 可一次跑完（约 40 秒）。
 
 **不要用「我改完了看起来没问题」交差**：这个项目的回归断言 700+ 条，专治「看起来没问题」。
 

@@ -15,7 +15,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
 PY = sys.executable
 PORT = 8811
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -51,9 +52,9 @@ def start():
     env = dict(os.environ)
     env['_WB_STDOUT_UTF8'] = '1'
     env['PYTHONIOENCODING'] = 'utf-8'          # 与 launch_workbench.pyw 一致（防 GBK 编码崩溃）
-    logf = open(os.path.join(HERE, 'app.out.log'), 'a', encoding='utf-8', buffering=1)
-    subprocess.Popen([PY, '-u', os.path.join(HERE, 'app.py'), '--port', str(PORT), '--idle-exit', '0'],
-                     cwd=HERE, env=env, stdout=logf, stderr=subprocess.STDOUT,
+    logf = open(os.path.join(ROOT, 'app.out.log'), 'a', encoding='utf-8', buffering=1)
+    subprocess.Popen([PY, '-u', os.path.join(ROOT, 'app.py'), '--port', str(PORT), '--idle-exit', '0'],
+                     cwd=ROOT, env=env, stdout=logf, stderr=subprocess.STDOUT,
                      stdin=subprocess.DEVNULL, creationflags=subprocess.DETACHED_PROCESS,
                      close_fds=True)
     for _ in range(60):
@@ -64,7 +65,7 @@ def start():
 
 
 def log_lines():
-    p = os.path.join(HERE, 'app.out.log')
+    p = os.path.join(ROOT, 'app.out.log')
     if not os.path.isfile(p):
         return []
     return io.open(p, encoding='utf-8', errors='replace').read().splitlines()

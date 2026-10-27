@@ -19,7 +19,8 @@ import time
 import urllib.error
 import urllib.request
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
 PY = sys.executable
 PORT = 8812
 BASE = 'http://127.0.0.1:%d' % PORT
@@ -136,9 +137,9 @@ def start():
     env['CASE_OPS_INVOICE_ROOT'] = os.path.join(TMP, '发票库')   # 批 30：公共发票库隔离
     env['INVOICE_UPLOAD_DIR'] = os.path.join(TMP, 'uploads')      # 批 30：上传暂存区隔离
     env['OCR_CONTENT_CACHE_DIR'] = os.path.join(TMP, 'ccache')    # 批 30：OCR 内容缓存隔离
-    logf = open(os.path.join(HERE, 'app.out.log'), 'a', encoding='utf-8', buffering=1)
-    subprocess.Popen([PY, '-u', os.path.join(HERE, 'app.py'), '--port', str(PORT), '--idle-exit', '0'],
-                     cwd=HERE, env=env, stdout=logf, stderr=subprocess.STDOUT,
+    logf = open(os.path.join(ROOT, 'app.out.log'), 'a', encoding='utf-8', buffering=1)
+    subprocess.Popen([PY, '-u', os.path.join(ROOT, 'app.py'), '--port', str(PORT), '--idle-exit', '0'],
+                     cwd=ROOT, env=env, stdout=logf, stderr=subprocess.STDOUT,
                      stdin=subprocess.DEVNULL, creationflags=subprocess.DETACHED_PROCESS,
                      close_fds=True)
     for _ in range(60):
@@ -654,7 +655,7 @@ def main():
         time.sleep(1.0)
         shutil.rmtree(TMP, ignore_errors=True)
         for f in ('_smoke_data.json', '_smoke_views.js'):
-            p = os.path.join(HERE, f)
+            p = os.path.join(ROOT, f)
             if os.path.isfile(p):
                 try:
                     os.unlink(p)

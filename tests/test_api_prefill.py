@@ -21,8 +21,9 @@ import shutil
 import sys
 import tempfile
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+HERE = os.path.dirname(os.path.abspath(__file__))      # tests/
+ROOT = os.path.dirname(HERE)                          # 项目根
+sys.path.insert(0, ROOT)
 
 TMP = tempfile.mkdtemp(prefix='wb_prefill_test_')
 CASES = os.path.join(TMP, 'cases')
