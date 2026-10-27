@@ -19,9 +19,13 @@
 （如 13900000000、350200199001010000），避免误报。
 """
 import argparse
+import json
 import os
 import re
 import sys
+
+BASELINE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        'sanitize.baseline.json')
 
 SKIP_DIRS = {'.git', '__pycache__', 'demo', 'data', 'node_modules', '.venv', 'venv'}
 EXT = ('.py', '.pyw', '.js', '.html', '.css', '.json', '.md', '.txt', '.bat', '.ps1')
@@ -73,11 +77,23 @@ def load_words():
     return out
 
 
+def _load_baseline():
+    if not os.path.isfile(BASELINE):
+        return set()
+    try:
+        with open(BASELINE, encoding='utf-8') as f:
+            return set(json.load(f) or [])
+    except (OSError, ValueError):
+        return set()
+
+
 def main():
     ap = argparse.ArgumentParser(description='隐私自检')
     ap.add_argument('--root', default='.')
     ap.add_argument('--strict', action='store_true', help='测试文件也检查（默认同样检查）')
     ap.add_argument('--max-show', type=int, default=60)
+    ap.add_argument('--write-baseline', action='store_true',
+                    help='把当前命中写为基线（只用于已人工确认的示例数据）')
     args = ap.parse_args()
 
     words = load_words()
@@ -85,7 +101,7 @@ def main():
     for dirpath, dirnames, filenames in os.walk(args.root):
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
         for fn in filenames:
-            if not fn.endswith(EXT):
+            if not fn.endswith(EXT) or fn == 'sanitize.baseline.json':
                 continue
             p = os.path.join(dirpath, fn)
             rel = os.path.relpath(p, args.root)
@@ -111,17 +127,29 @@ def main():
             except (OSError, UnicodeDecodeError):
                 continue
 
-    if not hits:
-        print('OK 未发现疑似真实个人信息 / 案号（自定义词表 %d 条）' % len(words))
+    known = _load_baseline()
+    keys = ['%s|%s|%s' % (rel, kind, val) for rel, i, kind, val in hits]
+
+    if args.write_baseline:
+        with open(BASELINE, 'w', encoding='utf-8') as f:
+            json.dump(sorted(set(keys)), f, ensure_ascii=False, indent=1)
+        print('已写入基线 %s（%d 条）' % (BASELINE, len(set(keys))))
         return 0
 
-    print('发现 %d 处疑似命中：' % len(hits))
-    for rel, i, kind, s in hits[:args.max_show]:
-        print('  %-30s %5d  [%s] %s' % (rel, i, kind, s))
-    if len(hits) > args.max_show:
-        print('  … 其余 %d 处省略' % (len(hits) - args.max_show))
+    new_hits = [(h, k) for h, k in zip(hits, keys) if k not in known]
+    old_n = len(hits) - len(new_hits)
+    if not new_hits:
+        print('OK 未发现**新增**疑似个人信息 / 案号（基线已确认 %d 条，自定义词表 %d 条）'
+              % (len(known), len(words)))
+        return 0
+
+    print('发现 %d 处**新增**疑似命中（另有 %d 条已在基线中）：' % (len(new_hits), old_n))
+    for (rel, i, kind, val), _k in new_hits[:args.max_show]:
+        print('  %-30s %5d  [%s] %s' % (rel, i, kind, val))
+    if len(new_hits) > args.max_show:
+        print('  … 其余 %d 处省略' % (len(new_hits) - args.max_show))
     print('\n如果是示例数据，请换成明显不可能的值（13900000000 / 350200199001010000）；'
-          '如果是真实数据，删掉或移入配置。')
+          '如果是真实数据，删掉或移入配置。确认无误可 --write-baseline 纳入基线。')
     return 1
 
 

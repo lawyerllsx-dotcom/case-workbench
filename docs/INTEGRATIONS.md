@@ -55,7 +55,7 @@
 | 原实现 | 固定 Obsidian vault 路径 + 特定目录结构 |
 | **替代 A** | 任意 Markdown 目录：把 `wiki.root` 指到你的笔记库根目录即可 |
 | **替代 B** | 不用它：工作台的台账 + 案卷目录已经能独立工作 |
-| 配置 | `wiki.root`、`wiki.case_dir`（案件页存放子目录） |
+| 配置 | `wiki.root`（当前版本仅用这一个；`wiki.case_dir` 为预留字段，未实现） |
 
 如果你的知识库是 Notion / 语雀 / 飞书文档，**不要硬接**——那需要写适配层（见第四节「扩展点」）。
 更好的做法：让 AI 读工作台导出的 Markdown，再自己发到目标平台。
@@ -92,7 +92,7 @@
 | 它做什么 | 到期前 60/30/14 天提醒；开庭日提醒 |
 | 原实现 | Windows toast（PowerShell WinRT）+ 桌宠气泡端口 |
 | **替代 A** | 只用页面内提醒：不配任何东西，打开工作台首页就有红点与清单 |
-| **替代 B** | webhook：`notification.webhook_url` 指向企业微信/钉钉/飞书机器人 |
+| **替代 B** | webhook（**需自行扩展**，约 20 行）：在 `deadline_check.py` 推送段加一个 POST；配置项 `notification.webhook_url` 已预留 |
 | **替代 C** | 系统计划任务 + `python deadline_check.py --no-toast`（只刷数据，不弹窗） |
 
 提醒内容只含「案件名 + 日期 + 待办」，**不含当事人联系方式**，可以安全推到群里。

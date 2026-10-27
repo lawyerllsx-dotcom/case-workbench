@@ -25,11 +25,21 @@
 
 ```bash
 pip install -r requirements.txt
+python verify.py           # 自检：依赖 / 配置 / 台账列映射 / 案卷 / 端口
 python demo_seed.py        # 生成一份虚构的演示台账与案卷（3 个假案件）
 python app.py              # 打开 http://127.0.0.1:8899
 ```
 
 看到首页「3 个案件 / 应收 4.7 万」就是跑通了。演示数据全部虚构，可以随便点、随便改。
+
+**文档导航**：
+
+| 你是 | 先读 |
+|---|---|
+| 想用起来 | 本文件「接自己的台账」 |
+| 想让 AI 帮你改代码 | [AGENTS.md](AGENTS.md) |
+| 想接自己的 LLM / OCR / 知识库 / 通知 | [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) |
+| 想确认自己改的东西没坏 | `python run_all_tests.py` + `python smoke_views.py --demo` |
 
 想换端口：`python app.py --port 8900`。
 
