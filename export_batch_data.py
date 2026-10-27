@@ -3,14 +3,14 @@
 r"""
 export_batch_data.py — 台账 → 批量文书系统「数据表」派生导出（法律工作台 · 阶段 4）
 
-背景（2026-09-12 实测）：`D:\案件\批量文书系统\数据\海大案件数据.xlsx` 共 5 sheet
+背景（2026-09-12 实测）：`<批量文书目录>\数据\示例案件数据.xlsx` 共 5 sheet
   `原告主体`(3 条) `案件`(0 条·仅表头) `被告`(0) `证据清单`(0) `财产线索`(0)
 → 台账是**单一事实源**，批量文书链路需要的「案件行」可由台账派生，但**违约金参数 / 事实理由正文 /
   被告 / 证据 / 财产线索**无法从台账得到，必须人工补——本脚本只派生能派生的，其余列**留空并列清单**。
 
 纪律：
-  - **默认只写到 `数据\生成\`**，绝不直接改 `海大案件数据.xlsx`（生成链上游，误改会连带批量出文书出错）
-  - `--overwrite` 才写正式文件，且**先备份**到 `D:\备份\05-批量文书数据备份\`
+  - **默认只写到 `数据\生成\`**，绝不直接改 `示例案件数据.xlsx`（生成链上游，误改会连带批量出文书出错）
+  - `--overwrite` 才写正式文件，且**先备份**到 `<数据备份目录>\`
   - 只读台账，不回写；金额解析失败 → 留空 + 标注，不猜
 
 用法：
@@ -33,12 +33,13 @@ if os.environ.get('_WB_STDOUT_UTF8') != '1':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 import ledger_ops  # noqa: E402
+import config as _config  # noqa: E402
 
 VERSION = '1.0.0'
-BATCH_DIR = r'D:\案件\批量文书系统'
-DATA_XLSX = os.path.join(BATCH_DIR, '数据', '海大案件数据.xlsx')
+BATCH_DIR = _config.path('paths.batch_dir') or os.path.join(HERE, 'demo', '批量文书')
+DATA_XLSX = os.path.join(BATCH_DIR, '数据', '案件数据.xlsx')
 GEN_DIR = os.path.join(BATCH_DIR, '数据', '生成')
-BACKUP_ROOT = r'D:\备份\05-批量文书数据备份'
+BACKUP_ROOT = _config.path('paths.batch_backup') or os.path.join(BATCH_DIR, '备份')
 
 # 案由 关键词（从 C 列尾部解析）
 CAUSES = ['买卖合同纠纷', '买卖合同', '服务合同纠纷', '劳动争议', '仲裁', '执行异议',
@@ -101,7 +102,7 @@ def read_existing_cases():
 
 
 def match_entity(case_row, entities):
-    """按委托人名匹配 entity_key（含简称兜底：'福建海大' ⊂ '福建海大饲料有限公司'）"""
+    """按委托人名匹配 entity_key（含简称兜底：'福建委托人' ⊂ '福建委托人饲料有限公司'）"""
     client = str(case_row.get('委托人') or '')
     for key, name in entities:
         if client and (client == name or client in name or name in client):
@@ -136,7 +137,7 @@ def parse_principal(case_row):
 
 
 def build():
-    rows = ledger_ops.read_rows('海大案件')
+    rows = ledger_ops.read_rows('案件')
     entities = read_entities()
     existing = set(read_existing_cases())
     out, manual = [], []
@@ -208,11 +209,11 @@ def main():
     ap.add_argument('--out-dir', default=GEN_DIR)
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--overwrite', action='store_true',
-                    help='写正式 海大案件数据.xlsx（先备份到 D:\\备份\\05-批量文书数据备份）')
+                    help='写正式 示例案件数据.xlsx（先备份到 D:\\备份\\05-批量文书数据备份）')
     args = ap.parse_args()
 
     rows, manual, entities, existing = build()
-    print('台账海大案件 %d 条；原告主体库 %d 条；数据表现有案件行 %d 条'
+    print('台账示例案件 %d 条；原告主体库 %d 条；数据表现有案件行 %d 条'
           % (len(rows), len(entities), len(existing)))
     matched = sum(1 for r in rows if r['entity_key'])
     print('可匹配原告主体：%d/%d；可在数据表中找到同名 case_key：%d'
@@ -237,7 +238,7 @@ def main():
             print('目标数据表不存在，跳过覆盖：%s' % DATA_XLSX)
             return 2
         os.makedirs(BACKUP_ROOT, exist_ok=True)
-        bak = os.path.join(BACKUP_ROOT, '海大案件数据-备份-%s.xlsx' % stamp)
+        bak = os.path.join(BACKUP_ROOT, '示例案件数据-备份-%s.xlsx' % stamp)
         shutil.copy2(DATA_XLSX, bak)
         with open(os.path.join(BACKUP_ROOT, 'manifest.md'), 'a', encoding='utf-8') as f:
             f.write('| %s | %s | %s |\n' % (datetime.now().strftime('%Y-%m-%d %H:%M'),

@@ -2,7 +2,7 @@
 """法律工作台图标生成器（纯本地，PIL；无网络依赖）
 
 设计：深靛蓝圆角底 + 金色天平（司法中立意象），4x 超采样抗锯齿，输出多尺寸 .ico
-用法： python make_icon.py [输出路径]   默认 D:\\dev-tools\\case_workbench\\法律工作台.ico
+用法： python make_icon.py [输出路径]   默认 <项目目录>\\法律工作台.ico
 """
 import os
 import sys

@@ -212,7 +212,7 @@ def selftest():
     os.environ['SCHEDULE_PATH'] = os.path.join(tmp, 'data', 'schedule.json')
 
     ref = date(2026, 9, 17)
-    d1, it1 = add_entry('与带教会谈', '2026-09-18', case='海大案', time='10:00',
+    d1, it1 = add_entry('与带教会谈', '2026-09-18', case='委托人案', time='10:00',
                         kind='会谈', lead=1, apply=True)
     chk('新增日程落盘', os.path.isfile(store_path()))
     chk('读回 1 条', len(load()['items']) == 1)
@@ -222,7 +222,7 @@ def selftest():
     chk('非法日期被拒', _raises(lambda: add_entry('x', '2026-13-40')))
     chk('非法类型被拒', _raises(lambda: add_entry('x', '2026-09-18', kind='不存在的')))
     chk('同键重复被拒', _raises(lambda: add_entry('与带教会谈', '2026-09-18',
-                                                  case='海大案', time='10:00')))
+                                                  case='委托人案', time='10:00')))
 
     # upcoming 窗口
     add_entry('阅卷', '2026-09-20', kind='阅卷', apply=True)

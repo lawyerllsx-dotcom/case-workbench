@@ -6,7 +6,7 @@ ledger_ops.py — 案件管理台账读写库（法律工作台数据层 · 单�
 定位：Web 操作台与煤球会话**共用**的台账读写库（Sol 原则：同一逻辑只一份实现）。
 纪律（写死在代码里）：
   - 一切写操作默认 dry-run，必须显式 --apply 才落盘
-  - 写前自动备份（默认落 D:\备份\07-台账备份\，可用 LEDGER_BACKUP_ROOT 覆盖）
+  - 写前自动备份（默认落 <台账备份目录>\，可用 LEDGER_BACKUP_ROOT 覆盖）
   - I 列（当前进度）更新**必须先读旧值追加进 J 列**（进度日志）——2026-08-12 事故教训
   - 写前检测 WPS/Office 文件锁，命中即拒绝（防云端占写冲突）
   - **绝不删除任何内容**：只追加/替换目标单元格
@@ -15,14 +15,14 @@ ledger_ops.py — 案件管理台账读写库（法律工作台数据层 · 单�
    首次 --apply 前建议在 WPS 中确认用印版本可回退（备份文件同格式可直接替换回去）。
 
 依赖：openpyxl → 用受管 venv 跑：
-  C:\Users\53001\.workbuddy\binaries\python\envs\default\Scripts\python.exe
+  <python>
 
 用法：
   python ledger_ops.py check                          # 路径/锁/表结构体检
   python ledger_ops.py list                           # 各 sheet 案件数与状态分布
-  python ledger_ops.py show --sheet 海大案件 [--limit 5]
-  python ledger_ops.py progress --sheet 海大案件 --row 4 --text "09.12：已寄要素式起诉状"          # dry-run
-  python ledger_ops.py progress --sheet 海大案件 --row 4 --text "..." --apply
+  python ledger_ops.py show --sheet 示例案件 [--limit 5]
+  python ledger_ops.py progress --sheet 示例案件 --row 4 --text "09.12：已寄要素式起诉状"          # dry-run
+  python ledger_ops.py progress --sheet 示例案件 --row 4 --text "..." --apply
   python ledger_ops.py probe                          # 写环境探测（锁/独占/目录可写）
   python ledger_ops.py pending [--retry ID|all]       # 查看/重试「待同步队列」
   python ledger_ops.py fix-j [--sheet X] [--row N] [--apply]   # 受控修复 J 列「双重日期」条目
@@ -1622,7 +1622,7 @@ def selftest():
     fake = os.path.join(tmp, 'fake.xlsx')
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = '海大案件'
+    ws.title = '案件'
     ws.cell(row=1, column=1, value='测试表')
     for i, h in enumerate(['序号', '案号', '案件', '案件类别', '委托人'], start=1):
         ws.cell(row=3, column=i, value=h)
@@ -1640,17 +1640,17 @@ def selftest():
     os.environ['LEDGER_PATH'] = fake
     os.environ['LEDGER_BACKUP_ROOT'] = bak
 
-    chk('read_rows 读到 1 条', len(read_rows('海大案件')) == 1)
+    chk('read_rows 读到 1 条', len(read_rows('案件')) == 1)
     chk('缺失 sheet 优雅返回 []（批 52 guard：合同审查表由人在 WPS 建）',
         read_rows('合同审查') == [])
-    chk('find_rows 命中 row=4', find_rows('海大案件', 1) == [(4, '1', '测试案')])
-    plan = plan_progress('海大案件', 4, '09.12：寄出起诉状')
+    chk('find_rows 命中 row=4', find_rows('案件', 1) == [(4, '1', '测试案')])
+    plan = plan_progress('案件', 4, '09.12：寄出起诉状')
     chk('dry-run 方案 I_new', plan['I_new'] == '09.12：寄出起诉状')
     chk('回迁条目正确', plan['J_entry_added'] == '09.12：旧进度A')
     chk('J_new 组装（新条在前，旧内容保留）',
         plan['J_new'] == '09.12：旧进度A\n08.01：更早的事')
     wb2 = openpyxl.load_workbook(fake, read_only=True)
-    chk('dry-run 未改文件', wb2['海大案件'].cell(row=4, column=COL_I).value == '旧进度A')
+    chk('dry-run 未改文件', wb2['案件'].cell(row=4, column=COL_I).value == '旧进度A')
     wb2.close()
     chk('dry-run 未产生备份', not os.path.isdir(bak))
     # 批 54：受控建「合同审查」sheet（dry-run → apply → 幂等 → 表头篡改拒动）
@@ -1709,18 +1709,18 @@ def selftest():
     # 批 23 回归：CLI 的 --status 必须真的传给 plan（批 14b 漏接 → 纯状态变更在 CLI 上被误判「无变更」）
     import subprocess
     _self = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ledger_ops.py')
-    cp = subprocess.run([sys.executable, _self, 'progress', '--sheet', '海大案件',
+    cp = subprocess.run([sys.executable, _self, 'progress', '--sheet', '案件',
                          '--row', '4', '--status', '已立案'],
                         capture_output=True, text=True, encoding='utf-8', errors='replace')
     chk('CLI --status（纯状态变更）dry-run 给出 K 变更、不报「无变更」',
         cp.returncode == 0 and 'K 列（最新状态）' in cp.stdout
         and '没有需要变更的内容' not in (cp.stdout + cp.stderr))
-    cp2 = subprocess.run([sys.executable, _self, 'progress', '--sheet', '海大案件',
+    cp2 = subprocess.run([sys.executable, _self, 'progress', '--sheet', '案件',
                           '--row', '4', '--status', '随便乱写'],
                          capture_output=True, text=True, encoding='utf-8', errors='replace')
     chk('CLI 池外状态被拒（非 0 退出）', cp2.returncode != 0)
     chk('CLI 回归未写盘（合成台账 K 仍为原值）',
-        openpyxl.load_workbook(fake, read_only=True)['海大案件'].cell(row=4, column=COL_K).value == '待立案')
+        openpyxl.load_workbook(fake, read_only=True)['案件'].cell(row=4, column=COL_K).value == '待立案')
     chk('状态池含实本观测值（不在册不误报）', '待审核' in status_pool()
         and '待执行' in status_pool())
     chk('律师函 sheet 用独立列映射', LETTER_COLS['签收状态'] == 8
@@ -1732,37 +1732,37 @@ def selftest():
     chk('锁检测命中', len(detect_lock()) == 1)
     code = None
     try:
-        apply_progress('海大案件', 4, '09.12：不该写入')
+        apply_progress('案件', 4, '09.12：不该写入')
     except SystemExit as e:
         code = e.code
     chk('有锁时 apply 退出码 2', code == 2)
     os.remove(lock)
 
     # 正常 apply
-    plan2, dst = apply_progress('海大案件', 4, '09.12：寄出起诉状')
+    plan2, dst = apply_progress('案件', 4, '09.12：寄出起诉状')
     chk('备份已生成', os.path.isfile(dst))
     chk('备份落点在 backup_root', os.path.dirname(dst) == bak)
     chk('manifest 已追加', os.path.isfile(os.path.join(bak, 'manifest.md')))
-    after = read_rows('海大案件')[0]
+    after = read_rows('案件')[0]
     chk('I 列已更新', after['当前进度'] == '09.12：寄出起诉状')
     chk('J 列新条在前且旧内容保留',
         '09.12：旧进度A' in after['进度日志'] and '08.01：更早的事' in after['进度日志'])
     chk('I 列旧值未丢失（在 J 中）', '旧进度A' in after['进度日志'])
     chk('带前缀文本自动识别日期',
-        plan_progress('海大案件', 4, '01.02：补记')['I_new'] == '01.02：补记')
-    chk('非法日期被拒', _raises(lambda: plan_progress('海大案件', 4, 'x', '2026-01-02')))
+        plan_progress('案件', 4, '01.02：补记')['I_new'] == '01.02：补记')
+    chk('非法日期被拒', _raises(lambda: plan_progress('案件', 4, 'x', '2026-01-02')))
     chk('律师函 sheet 拒绝 I→J', _raises(lambda: plan_progress('律师函', 4, 'x')))
 
     # 立卷草稿行
-    dp = plan_draft_row('海大案件', {'案件': '甲公司VS乙买卖合同纠纷', '委托人': '甲公司',
+    dp = plan_draft_row('案件', {'案件': '甲公司VS乙买卖合同纠纷', '委托人': '甲公司',
                                      '案件类别': '诉讼', '当前进度': '立卷（民-A-26099）'})
     chk('草稿行目标行号 = 末行+1', dp['row'] == 5)
     chk('草稿行序号 = 最大+1', dp['values']['序号'] == 2)
     chk('草稿行进度自动加 [待确认]',
         dp['values']['当前进度'] == '[待确认] 立卷（民-A-26099）')
     chk('非法列名被忽略', '不存在的列' not in dp['values'])
-    dp2, dst2 = append_draft_row('海大案件', {'案件': '甲公司VS乙买卖合同纠纷', '委托人': '甲公司'})
-    after2 = read_rows('海大案件')
+    dp2, dst2 = append_draft_row('案件', {'案件': '甲公司VS乙买卖合同纠纷', '委托人': '甲公司'})
+    after2 = read_rows('案件')
     chk('草稿行已落盘并可读回', len(after2) == 2
         and str(after2[-1].get('案件')) == '甲公司VS乙买卖合同纠纷')
     chk('草稿行写入前已备份', os.path.isfile(dst2))
@@ -1778,61 +1778,61 @@ def selftest():
     chk('probe 命中锁 → 不可写且给出原因', (not pr2['ok']) and bool(pr2['reasons']))
     busy = None
     try:
-        apply_progress_guarded('海大案件', 4, '09.12：占用时不该写')
+        apply_progress_guarded('案件', 4, '09.12：占用时不该写')
     except LedgerBusy as e:
         busy = e
     chk('占用时抛 LedgerBusy 并自动入队 1 条', busy is not None and bool(busy.queued)
         and len(queue_load()['items']) == 1)
     wb3 = openpyxl.load_workbook(fake, read_only=True)
     chk('占用时台账零改动（不半写）',
-        wb3['海大案件'].cell(row=4, column=COL_I).value == '09.12：寄出起诉状')
+        wb3['案件'].cell(row=4, column=COL_I).value == '09.12：寄出起诉状')
     wb3.close()
     os.remove(lock2)
     res = queue_retry()
     chk('排队项重试成功并出队', len(res['ok']) == 1 and not res['busy']
         and queue_load()['items'] == [])
-    after3 = read_rows('海大案件')[0]
+    after3 = read_rows('案件')[0]
     chk('重试真正写入 I', after3['当前进度'] == '09.12：占用时不该写')
     chk('重试把前值回迁 J', '09.12：寄出起诉状' in str(after3['进度日志']))
 
-    exp = row_snapshot('海大案件', 4)
+    exp = row_snapshot('案件', 4)
     wb4 = openpyxl.load_workbook(fake)
-    wb4['海大案件'].cell(row=4, column=COL_I, value='[外部]别人改过了')
+    wb4['案件'].cell(row=4, column=COL_I, value='[外部]别人改过了')
     wb4.save(fake)
     wb4.close()
     chk('外部改动被识别为 hard 冲突',
-        len(check_external_change(exp, '海大案件', 4)['hard']) >= 1)
+        len(check_external_change(exp, '案件', 4)['hard']) >= 1)
     conf = None
     try:
-        apply_progress_guarded('海大案件', 4, '09.12：不该覆盖', expect=exp)
+        apply_progress_guarded('案件', 4, '09.12：不该覆盖', expect=exp)
     except LedgerConflict as e:
         conf = e
     chk('冲突时抛 LedgerConflict 且台账未被覆盖', conf is not None
-        and read_rows('海大案件')[0]['当前进度'] == '[外部]别人改过了')
+        and read_rows('案件')[0]['当前进度'] == '[外部]别人改过了')
     chk('冲突不入队（必须人工判断）', queue_load()['items'] == [])
-    queue_add({'sheet': '海大案件', 'row': 4, 'text': 'x'})
+    queue_add({'sheet': '案件', 'row': 4, 'text': 'x'})
     chk('queue_drop 移除条目', queue_drop(queue_load()['items'][0]['id']) == 1
         and queue_load()['items'] == [])
     # ---- 批 13 修正：回迁不叠加日期（真台账事故回归）----
     wb5 = openpyxl.load_workbook(fake)
-    ws5 = wb5['海大案件']
+    ws5 = wb5['案件']
     ws5.cell(row=4, column=COL_I, value='09.04：已交代公司盖要素式诉状')
     ws5.cell(row=4, column=COL_J, value='07.02：更早\n05.18：早前')
     wb5.save(fake)
     wb5.close()
-    p3 = plan_progress('海大案件', 4, '09.12：电话沟通等排期')
+    p3 = plan_progress('案件', 4, '09.12：电话沟通等排期')
     chk('旧值自带 MM.DD： → 回迁原样入日志（不叠成双重日期）',
         p3['J_entry_added'] == '09.04：已交代公司盖要素式诉状')
     chk('组装后的 J 不出现双重日期', '09.12：09.04' not in p3['J_new'])
     wb6 = openpyxl.load_workbook(fake)
-    wb6['海大案件'].cell(row=4, column=COL_I, value='已立案')
+    wb6['案件'].cell(row=4, column=COL_I, value='已立案')
     wb6.save(fake)
     wb6.close()
     chk('旧值无日期前缀 → 补当前日期（原行为保留）',
-        plan_progress('海大案件', 4, '09.12：补记')['J_entry_added'] == '09.12：已立案')
+        plan_progress('案件', 4, '09.12：补记')['J_entry_added'] == '09.12：已立案')
 
     wb7 = openpyxl.load_workbook(fake)
-    wb7['海大案件'].cell(row=4, column=COL_J, value='09.12：09.04：双日期条目\n07.02：更早')
+    wb7['案件'].cell(row=4, column=COL_J, value='09.12：09.04：双日期条目\n07.02：更早')
     wb7.save(fake)
     wb7.close()
     hits = scan_double_date()
@@ -1842,15 +1842,15 @@ def selftest():
     n_fix, dst_fix = apply_fix_double_date(hits)
     chk('修复已落盘且写前备份', n_fix == 1 and os.path.isfile(dst_fix))
     chk('修复后不再有双重日期', scan_double_date() == [])
-    chk('修复未丢失其他日志行', '07.02：更早' in str(read_rows('海大案件')[0]['进度日志']))
+    chk('修复未丢失其他日志行', '07.02：更早' in str(read_rows('案件')[0]['进度日志']))
     chk('无命中时 fix 直接返回 0', apply_fix_double_date([]) == (0, None))
     chk('写后审计：除目标格外零变化（正常写）',
-        audit_cells({('海大案件', 4, 9): 'a', ('海大案件', 5, 3): 'x'},
-                    {('海大案件', 4, 9): 'b', ('海大案件', 5, 3): 'x'},
-                    {('海大案件', 4, 9)}) == [])
+        audit_cells({('案件', 4, 9): 'a', ('案件', 5, 3): 'x'},
+                    {('案件', 4, 9): 'b', ('案件', 5, 3): 'x'},
+                    {('案件', 4, 9)}) == [])
     chk('写后审计：能抓出目标格之外的意外改动',
-        audit_cells({('海大案件', 5, 3): 'x'}, {('海大案件', 5, 3): 'y'},
-                    {('海大案件', 4, 9)}) == [('海大案件', 5, 3, 'x', 'y')])
+        audit_cells({('案件', 5, 3): 'x'}, {('案件', 5, 3): 'y'},
+                    {('案件', 4, 9)}) == [('案件', 5, 3, 'x', 'y')])
     chk('写后审计：新增/清空的格子也算变化',
         len(audit_cells({}, {('其他案件', 7, 1): '新'}, set())) == 1
         and len(audit_cells({('其他案件', 7, 1): '旧'}, {}, set())) == 1)
@@ -1860,28 +1860,28 @@ def selftest():
     # ---- 行级回退（restore-row，2026-09-12 新增）----
     old = os.path.join(tmp, 'old.xlsx')
     wb8 = openpyxl.load_workbook(fake)
-    wb8['海大案件'].cell(row=4, column=COL_I, value='原始进度')
-    wb8['海大案件'].cell(row=4, column=COL_J, value='06.01：最老的一行')
+    wb8['案件'].cell(row=4, column=COL_I, value='原始进度')
+    wb8['案件'].cell(row=4, column=COL_J, value='06.01：最老的一行')
     wb8.save(old)
     wb8.close()
     wb9 = openpyxl.load_workbook(fake)
-    wb9['海大案件'].cell(row=4, column=COL_I, value='09.12：测试写坏的新进度')
-    wb9['海大案件'].cell(row=4, column=COL_J, value='09.12：06.01：最老的一行')
+    wb9['案件'].cell(row=4, column=COL_I, value='09.12：测试写坏的新进度')
+    wb9['案件'].cell(row=4, column=COL_J, value='09.12：06.01：最老的一行')
     wb9.save(fake)
     wb9.close()
-    rp = plan_restore_row(old, '海大案件', 4)
+    rp = plan_restore_row(old, '案件', 4)
     chk('回退方案读到备份原值', rp['after']['当前进度'] == '原始进度'
         and rp['after']['进度日志'] == '06.01：最老的一行')
     chk('回退方案标出需改的列', set(rp['changed']) == {'当前进度', '进度日志'})
     n_r, dst_r, extra_r = apply_restore_row(rp)
-    cur4 = read_rows('海大案件')[0]
+    cur4 = read_rows('案件')[0]
     chk('行级回退已落盘且与原值一致', n_r == 2 and str(cur4['当前进度']) == '原始进度'
         and str(cur4['进度日志']) == '06.01：最老的一行')
     chk('回退写后审计：除目标格外零变化', extra_r == [])
     chk('回退无变化时直接跳过（不写盘）',
-        apply_restore_row(plan_restore_row(old, '海大案件', 4)) == (0, None, []))
+        apply_restore_row(plan_restore_row(old, '案件', 4)) == (0, None, []))
     chk('回退拒绝不存在的备份', _raises(lambda: plan_restore_row(
-        os.path.join(tmp, '没有这个文件.xlsx'), '海大案件', 4)))
+        os.path.join(tmp, '没有这个文件.xlsx'), '案件', 4)))
 
     # ---- 批 14b：K 列（最新状态）受控回写 ----
     # 批 24：规定值 10 → 11（+已判决，台账 r23 与两页 K 列下拉已同步）；池外样本改用「待执行」
@@ -1892,27 +1892,27 @@ def selftest():
         (not status_is_rule_ok('待执行')) and status_is_rule_ok('已立案')
         and status_is_rule_ok('已判决'))
     chk('池外状态被拒（不写台账）',
-        _raises(lambda: plan_progress('海大案件', 4, '', None, '待执行')))
+        _raises(lambda: plan_progress('案件', 4, '', None, '待执行')))
     chk('进度与状态都为空被拒',
-        _raises(lambda: plan_progress('海大案件', 4, '', None, '')))
+        _raises(lambda: plan_progress('案件', 4, '', None, '')))
     chk('状态与现状相同 → 视为无改动并报错',
-        _raises(lambda: plan_progress('海大案件', 4, '', None, '待立案')))
-    pk = plan_progress('海大案件', 4, '09.12：判决已下', None, '待判决')
+        _raises(lambda: plan_progress('案件', 4, '', None, '待立案')))
+    pk = plan_progress('案件', 4, '09.12：判决已下', None, '待判决')
     chk('状态变更进方案 K_old/K_new', pk['K_old'] == '待立案' and pk['K_new'] == '待判决')
     chk('状态行（旧→新）进 J 方案', pk['J_status_added'] == '09.12：【状态】待立案→待判决')
     chk('进度行与状态行同时进 J',
         pk['J_new'].startswith('09.12：原始进度\n09.12：【状态】待立案→待判决'))
-    pt = plan_progress('海大案件', 4, '', None, '已立案')
+    pt = plan_progress('案件', 4, '', None, '已立案')
     chk('纯状态变更：I_new 为 None（不动 I 列）', pt['I_new'] is None and pt['K_new'] == '已立案')
-    sg = apply_progress_guarded('海大案件', 4, '', None, new_status='待判决')
-    a4 = read_rows('海大案件')[0]
+    sg = apply_progress_guarded('案件', 4, '', None, new_status='待判决')
+    a4 = read_rows('案件')[0]
     chk('纯状态回写：K 已改、I 未动',
         str(a4['最新状态']) == '待判决' and str(a4['当前进度']) == '原始进度')
     chk('纯状态回写：J 留下【状态】行', '【状态】待立案→待判决' in str(a4['进度日志']))
     chk('纯状态回写：写后审计零意外（允许格含 K 列）', sg['audit'] == [])
     chk('纯状态回写：已备份', os.path.isfile(sg['backup']))
-    sg2 = apply_progress_guarded('海大案件', 4, '09.12：判决已送达', None, new_status='执行中')
-    a5 = read_rows('海大案件')[0]
+    sg2 = apply_progress_guarded('案件', 4, '09.12：判决已送达', None, new_status='执行中')
+    a5 = read_rows('案件')[0]
     chk('进度+状态同时写：两列都落盘',
         str(a5['当前进度']) == '09.12：判决已送达' and str(a5['最新状态']) == '执行中')
     chk('进度+状态同时写：J 含进度回迁 + 状态行',
@@ -1929,13 +1929,13 @@ def selftest():
         _wcn.cell(row=3, column=_ci, value=_k)
     wb3.save(fake)
     wb3.close()
-    pc = plan_move_to_closed('海大案件', 4)
+    pc = plan_move_to_closed('案件', 4)
     chk('结案移行预览：目标=已结案页第 4 行', pc['dst_sheet'] == closed_sheet_name() and pc['dst_row'] == 4)
     chk('结案移行预览：目标行「最新状态」写「已结案」', pc['cells'].get(COL_K) == '已结案')
     chk('结案移行预览：备注定位于最后一列', pc['note_col'] == COLS['备注'])
-    mv = apply_move_to_closed('海大案件', 4)
+    mv = apply_move_to_closed('案件', 4)
     wb4 = openpyxl.load_workbook(fake, read_only=True)
-    _wc, _wsx = wb4[closed_sheet_name()], wb4['海大案件']
+    _wc, _wsx = wb4[closed_sheet_name()], wb4['案件']
     chk('结案移行：目标行已写入且状态=已结案', _wc.cell(row=4, column=COL_K).value == '已结案'
         and str(_wc.cell(row=4, column=COLS['备注']).value or '').find('移入') >= 0)
     chk('结案移行：源行已清空（行仍在）',
@@ -1969,7 +1969,7 @@ def main():
     sub.add_parser('check')
     sub.add_parser('list')
     p_show = sub.add_parser('show')
-    p_show.add_argument('--sheet', default='海大案件')
+    p_show.add_argument('--sheet', default='案件')
     p_show.add_argument('--limit', type=int, default=0)
 
     p_pr = sub.add_parser('progress')

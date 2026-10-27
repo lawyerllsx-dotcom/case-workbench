@@ -41,14 +41,14 @@ PORTS = list(range(8899, 8911))
 BASE_URL = 'http://127.0.0.1:%d'
 WIN_TITLE = '法律工作台'
 
-# 服务解释器 = default venv（openpyxl 只装在那里；用错解释器 /api/overview 会 500）
-# 2026-09-13 黑窗修复：改用 **pythonw.exe**（GUI 子系统，天生无控制台）——
-# 原用 python.exe + DETACHED_PROCESS 在爸爸机器上仍弹了控制台黑窗（截图实锤，
-# 标题=venv python.exe 路径）；CREATE_NO_WINDOW 叠加双保险
+# 服务解释器：优先用「当前解释器」（谁启动就用谁），其次同目录 venv，最后常见路径。
+# 用 pythonw.exe 可避免 Windows 弹控制台黑窗。
+_HERE = os.path.dirname(os.path.abspath(__file__))
 SERVICE_PY_CANDIDATES = [
-    r'C:\Users\53001\.workbuddy\binaries\python\envs\default\Scripts\pythonw.exe',
-    r'C:\Users\53001\.workbuddy\binaries\python\envs\default\Scripts\python.exe',
-    r'C:\Users\53001\.workbuddy\binaries\python\envs\default\pythonw.exe',
+    sys.executable,
+    os.path.join(_HERE, '.venv', 'Scripts', 'pythonw.exe'),
+    os.path.join(_HERE, '.venv', 'Scripts', 'python.exe'),
+    r'<pythonw>',
 ]
 EDGE_CANDIDATES = [
     r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',

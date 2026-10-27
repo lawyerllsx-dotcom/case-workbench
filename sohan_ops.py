@@ -10,7 +10,7 @@ r"""sohan_ops.py — 所函生成（批 39a）
    故本模块只做：`复制模板 docx → 定点替换若干 <w:t> 文本节点 → 另存新文件`。
    **不做**：拼 XML / 自建版式 / 改抬头与落款。
 
-模板真源：`D:\\案件\\安清惠\\所函\\_代盖章（非经手案）\\4.所函.doc`
+模板真源：`D:\\案件\\张律师\\所函\\_代盖章（非经手案）\\4.所函.doc`
   ⚠️ 该文件是 **OLE2 老式 .doc**（二进制），Python 无法直接改；
   故本模块使用**预转换的 docx 模板**（`docs/所函模板.docx`，由 `convert_doc.py` 一次性生成并留档）。
   生成时**绝不改模板真源**。
@@ -18,12 +18,13 @@ r"""sohan_ops.py — 所函生成（批 39a）
 替换口径（2026-09-17 实测模板文本节点，带前导/尾随空格）：
   节点①  `    福建省惠安县人民法院    `            → 致送法院
   节点②  `  周锦全、周高典、王彩丽、周科清、周科明  ` → 委托人
-  节点③  ` 安清惠律师   `                        → 承办律师（默认「安清惠律师」）
+  节点③  ` 张律师律师   `                        → 承办律师（默认「张律师律师」）
   节点④  `  强制执行    `                        → 诉讼阶段
   节点⑤  `  骆纪川…孙庄土地经营权出租合同    `      → 对方当事人 + 案由（**同节点，需拆**）
   节点⑥  ` 年  月  日`                            → **保持留空**（爸爸拍板）
 """
 import argparse
+import config as _config
 import hashlib
 import io
 import os
@@ -40,18 +41,18 @@ if os.environ.get('_WB_STDOUT_UTF8') != '1':
 VERSION = '1.0.0'
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# 模板真源（.doc，只读参考）与预转换 docx 模板
-TPL_DOC = r'D:\案件\安清惠\所函\_代盖章（非经手案）\4.所函.doc'
+# 模板真源（可选，.doc 只读参考，从配置读；未配置则只用预转换的 docx）
+TPL_DOC = _config.get('sohan.template_doc', '') or ''
 DEFAULT_TPL = os.environ.get('SOHAN_TEMPLATE') or os.path.join(HERE, 'templates', '所函模板.docx')
 
 STAGES = ['洽谈', '一审', '二审', '再审', '执行', '强制执行', '仲裁', '非诉', '其他']
-DEFAULT_LAWYER = '安清惠律师'
+DEFAULT_LAWYER = (_config.get('lawyer.name', '') or '') + '律师'
 
 # 模板里「已填样例」的原始文本（用于识别 + 校验是否替换干净）
 _TPL_SAMPLES = {
     'court': '福建省惠安县人民法院',
     'client': '周锦全、周高典、王彩丽、周科清、周科明',
-    'lawyer': '安清惠律师',
+    'lawyer': '张律师律师',
     'stage': '强制执行',
     'opponent_cause': '骆纪川、张桂珍、张伟城、骆锦泉、骆琼珍、骆培阳、骆培祥、孙庄土地经营权出租合同',
 }
@@ -195,7 +196,7 @@ def plan_sohan(court='', client='', lawyer='', stage='', opponent='', cause='', 
     if folder:
         dst_dir = os.path.join(folder, '01-委托手续')
     else:
-        biz = os.environ.get('CASE_OPS_BIZ_ROOT') or r'D:\案件\安清惠'
+        biz = os.environ.get('CASE_OPS_BIZ_ROOT') or _config.path('paths.biz_root')
         dst_dir = os.path.join(biz, '所函', '_生成', datetime.now().strftime('%Y%m%d'))
     who = _safe_fn(str(opponent or client).split('、')[0])[:20]
     fname = '所函-%s%s.docx' % (who, ('-'+cause) if cause else '')
@@ -293,7 +294,7 @@ def selftest():
         nx = z.read('word/document.xml').decode('utf-8')
         chk('落盘件含新值', '厦门市思明区人民法院' in nx)
         chk('落盘件无旧值', '周锦全' not in nx and '骆纪川' not in nx)
-        chk('落盘件保留抬头', '福建飞想律师事务所' in nx)
+        chk('落盘件保留抬头', '某某律师事务所' in nx)
         chk('落盘件 zip 结构完整', len(z.namelist()) == 17)
     chk('模板真源未被改（.doc 仍在）', os.path.isfile(TPL_DOC))
     chk('同名避让生效', _free_name(os.path.basename(r['dst']),

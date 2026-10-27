@@ -16,7 +16,7 @@ app.py — 法律工作台 · 本地 Web 操作台（仅 127.0.0.1，零外发�
 启动（2026-09-12 起）：双击桌面「法律工作台」→ `launch_workbench.pyw`（pythonw 无窗口起本文件 + 自动开浏览器）
     关掉网页约 2 分钟后由**空闲守望**自动关停（`--idle-exit`，默认 120 秒；0 = 不自动关停）
 命令行：
-  <default venv python> D:\dev-tools\case_workbench\app.py [--port 8899] [--idle-exit 120]
+  <default venv python> <项目目录>\app.py [--port 8899] [--idle-exit 120]
   或双击 启动-法律工作台.bat（故障排查用，会弹黑窗）
 """
 import argparse
@@ -680,7 +680,7 @@ def api_court_sms_download(body):
                                    'sdsin': link['sdsin']}, apply=confirm,
                                subdir='' if stash else '00-收件箱')
     r['stash'] = stash
-    # 批 74：目标为「分组夹」（下含 ≥2 个案件子夹）时提醒——防误落（实踩：许明竹案误落 A海大）
+    # 批 74：目标为「分组夹」（下含 ≥2 个案件子夹）时提醒——防误落（实踩：当事人甲案误落 A委托人）
     if not stash and not r.get('error'):
         try:
             extra = [d for d in case_ops.case_dirs(p) if d not in case_ops.ALLOWED_DIRS]
@@ -1640,7 +1640,7 @@ def api_contracts():
 
     ① 台账「合同审查」sheet（`ledger_ops.read_rows`；**表由爸爸在 WPS 手工建**，
        sheet 缺失时优雅返回空——页面给「怎么建表」指引，代码绝不代建/绝不写入）；
-    ② `D:\\案件\\安清惠\\合同审查\\` 横向素材夹扫描（夹不存在返回 exists=False，
+    ② `D:\\案件\\张律师\\合同审查\\` 横向素材夹扫描（夹不存在返回 exists=False，
        **不自动建**，页面给建夹指引文案）。
     **全页只读：台账零写入、素材夹零改动。**
     """
@@ -2065,7 +2065,7 @@ def api_letter_sign_records(body):
     r"""查某债务人夹下的**签收记录**（批 46.2）。
 
     爸爸问「我原来律师函文件夹里存的 EMS 签收图怎么不见了」——其实一直在
-    （`海大\律师函-福建海大VS陈飞鹏\律师函及签收记录\` 下 5 对「函 PDF + 签收图」），
+    （`委托人\律师函-福建委托人VS陈飞鹏\律师函及签收记录\` 下 5 对「函 PDF + 签收图」），
     只是页面没归类展示。本接口按**目录名含「签收」**跨层级捞出。
     """
     folder = str(body.get('folder') or '').strip()
@@ -2192,7 +2192,7 @@ def api_scatter_case_options():
     """散件入库的**候选案件**（供前端「人工指定」下拉）
 
     批 39c（2026-09-18）：实测 32 件可入库候选里 **5 件被「多案并存」拦住**
-    （如「揭阳海大」能匹配 7 个案），原逻辑直接 blocked、人工无法干预。
+    （如「揭阳委托人」能匹配 7 个案），原逻辑直接 blocked、人工无法干预。
     """
     try:
         rows = case_ops.ledger_case_rows()

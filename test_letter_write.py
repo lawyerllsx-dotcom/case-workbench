@@ -43,7 +43,7 @@ import openpyxl                                           # noqa: E402
 
 def build():
     wb = openpyxl.Workbook()
-    for nm in ('海大案件', '其他案件', '律师函'):
+    for nm in ('案件', '其他案件', '律师函'):
         wb.create_sheet(nm)
     wb.remove(wb['Sheet'])
     ws = wb['律师函']

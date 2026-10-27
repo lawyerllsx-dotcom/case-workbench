@@ -116,7 +116,7 @@ def no_redirect_effective():
 COL = {'seq': 1, 'case_no': 2, 'name': 3, 'category': 4, 'client': 5, 'court': 6,
        'judge': 7, 'hearing': 8, 'progress': 9, 'log': 10, 'status': 11,
        'seal': 24, 'balance': 21, 'note': 26}
-CASE_SHEETS = list(ledger_ops.SHEETS_CASE)      # ['海大案件', '其他案件']（单一来源）
+CASE_SHEETS = list(ledger_ops.SHEETS_CASE)      # ['案件', '其他案件']（单一来源）
 LETTER_SHEET = ledger_ops.SHEET_LETTER          # '律师函'
 
 
@@ -852,8 +852,8 @@ ANALYZE_FORMAT = (
     "\"text\":\"不超过45字的提醒文案\",\"state\":\"review\"|\"jumping\"|\"failed\"|\"waiting\"|\"none\",\n"
     "\"change\":\"new\"|\"updated\"|\"same\"}，\n"
     "有效提醒最多 %d 条，按优先级排序。宁可少报不错报，日期/案号不得编造。\n"
-    "【案名硬规则】每条 text 必须以案件短名开头（如'许明竹案：开庭改至10月8日'）。\n"
-    "短名取'案件'列的对方当事人或核心主体（'福州海大vs许明竹、吴群华...'→'许明竹案'；\n"
+    "【案名硬规则】每条 text 必须以案件短名开头（如'当事人甲案：开庭改至10月8日'）。\n"
+    "短名取'案件'列的对方当事人或核心主体（'福州委托人vs当事人甲、吴群华...'→'当事人甲案'；\n"
     "'厦门中非世野野生动物园'→'中非世野案'），禁止只写案号尾号（如'1016号案'）；"
     "45 字限额含案名。\n" % LLM_MAX_REMINDERS
 )
@@ -866,7 +866,7 @@ CHAT_SYSTEM = (
     "数据里没有的信息明确说'工作台数据中没有记录'，绝不编造。"
     "【隐私纪律】客户电话/微信等联系方式**不在你的数据范围内**（按纪律不上行），"
     "被问到时答'联系方式未纳入助理数据，请在工作台「客户」页查看'。"
-    "提到具体案件时用案名指代（对方当事人或核心主体+案，如'许明竹案''中非世野案'），"
+    "提到具体案件时用案名指代（对方当事人或核心主体+案，如'当事人甲案''中非世野案'），"
     "不要只报案号尾号。"
     "【边界】案卷里**文件的正文内容**（起诉状/证据/判决书等）你看不到，"
     "只有目录索引；问这类内容要明说'我看不到文件正文，只知目录结构'，"
@@ -1097,7 +1097,7 @@ def selftest():
 
     # ---- 待办识别（双向：真阳性必过 / 假阳性必拦）
     cases = [
-        {'name': '许明竹案', 'case_no': 'A1', 'sheet': '海大案件', 'row': 4,
+        {'name': '当事人甲案', 'case_no': 'A1', 'sheet': '案件', 'row': 4,
          'progress': '跟进 9.20 联系法官'},
         {'name': '无日期案', 'case_no': 'B1', 'sheet': '其他案件', 'row': 5,
          'progress': '已跟进联系法官'},                     # 关键词有、日期无 → 不算待办
@@ -1108,15 +1108,15 @@ def selftest():
     ]
     todos = parse_todo_from_progress(cases)
     names = [t['case'] for t in todos]
-    chk('待办：真阳性（许明竹案）命中', '许明竹案' in names)
+    chk('待办：真阳性（当事人甲案）命中', '当事人甲案' in names)
     chk('待办：假阳性（无日期）被拦', '无日期案' not in names)
     chk('待办：假阳性（无关键词）被拦', '纯日期案' not in names)
     chk('待办：多日期取最远（2026-09-25）',
         next((t['date'] for t in todos if t['case'] == '多日期案'), '') == '2026-09-25')
 
     # ---- 提醒 id 稳定性
-    chk('id 同文案相同', _rid('许明竹案：开庭') == _rid('许明竹案：开庭'))
-    chk('id 文案变则变', _rid('许明竹案：开庭') != _rid('许明竹案：改期'))
+    chk('id 同文案相同', _rid('当事人甲案：开庭') == _rid('当事人甲案：开庭'))
+    chk('id 文案变则变', _rid('当事人甲案：开庭') != _rid('当事人甲案：改期'))
 
     # ---- merge 状态保持
     old = [{'id': _rid('X案：提醒'), 'text': 'X案：提醒', 'priority': 'high',
@@ -1141,11 +1141,11 @@ def selftest():
     tmp = os.path.join(tempfile.gettempdir(), '_assistant_selftest.xlsx')
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = '海大案件'
+    ws.title = '案件'
     ws.cell(row=1, column=1, value='序号')
     ws.cell(row=4, column=1, value=1)
     ws.cell(row=4, column=2, value='(2026)闽01民初1号')
-    ws.cell(row=4, column=3, value='福州海大vs许明竹')
+    ws.cell(row=4, column=3, value='福州委托人vs当事人甲')
     ws.cell(row=4, column=8, value='2026-10-08')
     ws.cell(row=4, column=9, value='跟进 9.20 联系法官')
     ws.cell(row=4, column=11, value='待开庭')
@@ -1155,7 +1155,7 @@ def selftest():
     wb.close()
     try:
         ctx = build_ledger_context(tmp)
-        chk('上下文含案名', '许明竹' in ctx)
+        chk('上下文含案名', '当事人甲' in ctx)
         chk('上下文含案号', '(2026)闽01民初1号' in ctx)
         chk('上下文含开庭', '2026-10-08' in ctx or '2026-10-08 00:00:00' in ctx)
         chk('上下文含进度', '跟进 9.20 联系法官' in ctx)

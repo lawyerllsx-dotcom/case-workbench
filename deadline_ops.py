@@ -589,7 +589,7 @@ def selftest():
 
     # 合并去重 + 保留 done 状态
     items = [{'案件': '测试案', '期限类型': '开庭', '到期日': '2026-09-15',
-              '来源': '台账H', '备注': '', 'sheet': '海大案件', 'row': 4}]
+              '来源': '台账H', '备注': '', 'sheet': '案件', 'row': 4}]
     d2, stat = merge(items, [])
     chk('重复项判为维持', stat['added'] == 0 and stat['updated'] == 1)
     _, it2 = mark_done(d2['items'][0]['id'], apply=True)

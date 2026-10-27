@@ -29,7 +29,7 @@ import urllib.error
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PY = r'C:\Users\53001\.workbuddy\binaries\python\envs\default\Scripts\python.exe'
+PY = r'<python>'
 PORT = 8813
 BASE = 'http://127.0.0.1:%d' % PORT
 OP = urllib.request.build_opener(urllib.request.ProxyHandler({}))   # 绕开环境代理
@@ -67,11 +67,11 @@ def make_fake_ledger():
     import openpyxl
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = '海大案件'
+    ws.title = '案件'
     ws.append(['案件编号', '案件', '委托人', '案件类别', '承办律师', '状态',
                '案号', '法院', '开庭时间', '当前进度', '标的额', '基础律师费', '进度日志'])
-    ws.append(['1', '福建海大vs林国伟-买卖合同纠纷', '福建海大饲料有限公司', '诉讼',
-               '安清惠', '执行中', '(2026)闽0203民初1016号', '思明法院', '', '08.01：已立案',
+    ws.append(['1', '福建委托人vs林国伟-买卖合同纠纷', '福建委托人饲料有限公司', '诉讼',
+               '张律师', '执行中', '(2026)闽0203民初1016号', '思明法院', '', '08.01：已立案',
                '100000', '20000', '07.01：立案受理'])
     p = os.path.join(TMP, '合成台账.xlsx')
     wb.save(p)
@@ -136,7 +136,7 @@ def main():
     make_fake_ledger()
     # 分析桩：返回合法 JSON 数组（触发解析路径）；对话桩：普通文本
     mock = make_mock_assistant(
-        '[{"priority":"high","text":"许明竹案：开庭改至10月8日","state":"review","change":"new"},'
+        '[{"priority":"high","text":"当事人甲案：开庭改至10月8日","state":"review","change":"new"},'
         '{"priority":"normal","text":"陈丽萍案：缴费期限已逾期9天","state":"failed","change":"new"}]')
 
     if not start(mock):

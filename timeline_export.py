@@ -14,8 +14,8 @@ r"""timeline_export.py — 案件时间轴导出（台账派生 → xlsx，法�
    （模板 C/H/I/J 列是公式，粘进去会自动出图）。
 
 用法：
-  <default venv python> timeline_export.py --sheet 海大案件 --row 4                # dry-run
-  <default venv python> timeline_export.py --sheet 海大案件 --row 4 --apply
+  <default venv python> timeline_export.py --sheet 示例案件 --row 4                # dry-run
+  <default venv python> timeline_export.py --sheet 示例案件 --row 4 --apply
   <default venv python> timeline_export.py --selftest                              # 自测（临时目录）
 """
 import argparse
@@ -237,7 +237,7 @@ def selftest():
     import openpyxl
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = '海大案件'
+    ws.title = '案件'
     for c, h in enumerate(['序号', '案号', '案件', '案件类别', '委托人', '法院/仲裁',
                            '承办法官', '开庭时间'], start=1):
         ws.cell(row=3, column=c, value=h)
@@ -256,7 +256,7 @@ def selftest():
     os.environ['LEDGER_BACKUP_ROOT'] = os.path.join(tmp, 'bak')
     out = os.path.join(tmp, 'out')
     try:
-        data = build_rows('海大案件', 4)
+        data = build_rows('案件', 4)
         times = [x['时间'] for x in data['rows']]
         notes = [x['备注'] for x in data['rows']]
         chk('条目数 = 日志 2 + 进度 1 + 开庭 1（无日期行被并入）', len(data['rows']) == 4)
@@ -278,7 +278,7 @@ def selftest():
         chk('大事件正文抽对（去掉 MM.DD： 前缀）',
             any(x['大事件'] == '递交诉状' for x in data['rows']))
 
-        pl = plan_export('海大案件', 4, out_dir=out, stamp='20260101-0000')
+        pl = plan_export('案件', 4, out_dir=out, stamp='20260101-0000')
         chk('dry-run 不落盘', not os.path.exists(pl['dst']))
         chk('落点在指定目录', pl['dst_dir'] == out)
         chk('文件名带案件简称与时间戳',
@@ -294,11 +294,11 @@ def selftest():
         chk('标题行是案件名', str(ws2['A1'].value).startswith('甲公司vs乙公司'))
         wb2.close()
 
-        p2 = plan_export('海大案件', 4, out_dir=out, stamp='20260101-0000')
+        p2 = plan_export('案件', 4, out_dir=out, stamp='20260101-0000')
         chk('同名再导出自动改名 -2', p2['dst'].endswith('-2.xlsx'))
         write_xlsx(p2)
         chk('原文件未被覆盖（两个文件都在）', os.path.isfile(p1) and os.path.isfile(p2['dst']))
-        chk('台账未被改动', ledger_ops.read_rows('海大案件')[0]['当前进度'] == '09.12：已立案')
+        chk('台账未被改动', ledger_ops.read_rows('案件')[0]['当前进度'] == '09.12：已立案')
         chk('未在案件夹外乱建目录', not os.path.exists(os.path.join(tmp, 'fake.xlsx.xlsx')))
     finally:
         for k in ('LEDGER_PATH', 'LEDGER_BACKUP_ROOT'):

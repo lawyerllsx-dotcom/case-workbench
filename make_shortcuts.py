@@ -6,12 +6,12 @@
 
 用法：
     <default venv python> make_shortcuts.py            # 生成 ps1 并尝试自动执行
-    <default venv python> make_shortcuts.py --no-run   # 只生成 D:\\dev-tools\\case_workbench\\_mk_shortcuts.ps1
+    <default venv python> make_shortcuts.py --no-run   # 只生成 <项目目录>\\_mk_shortcuts.ps1
 
 说明：
   - ps1 以 **utf-8-sig** 写出（PowerShell 5.1 无 BOM 会按 GBK 误读中文路径）
   - 沙箱内 WScript.Shell COM 可用（2026-09-12 实测 COM_OK）；若自动执行失败，手动跑：
-      powershell -NoProfile -ExecutionPolicy Bypass -File D:\\dev-tools\\case_workbench\\_mk_shortcuts.ps1
+      powershell -NoProfile -ExecutionPolicy Bypass -File <项目目录>\\_mk_shortcuts.ps1
   - 回读校验结果写 `_mk_shortcuts_report.txt`
 """
 import io
@@ -23,11 +23,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # 启动器解释器（2026-09-13 起第一位 = 系统 Python312 pythonw：**有 tkinter**，
 # launch_workbench v2 的品牌启动窗需要；venv 精简版没有 tkinter，作降级候选）
 PYW_CANDIDATES = [
-    r'C:\Users\53001\AppData\Local\Programs\Python\Python312\pythonw.exe',
-    r'C:\Users\53001\.workbuddy\binaries\python\envs\default\Scripts\pythonw.exe',
+    r'<pythonw>',
+    r'<pythonw>',
 ]
 PYW = next((p for p in PYW_CANDIDATES if os.path.isfile(p)), PYW_CANDIDATES[0])
-DESK = r'C:\Users\53001\Desktop'
+DESK = r'<用户目录>\Desktop'
 ICO = os.path.join(HERE, '法律工作台.ico')
 PS1 = os.path.join(HERE, '_mk_shortcuts.ps1')
 REPORT = os.path.join(HERE, '_mk_shortcuts_report.txt')

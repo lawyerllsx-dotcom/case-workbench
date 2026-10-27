@@ -1,0 +1,17 @@
+# 运行时数据（不要提交：含客户信息、案件数据）
+demo/
+data/
+*.log
+*.db
+
+# 本机配置（含律师个人信息与真实路径）
+workbench.config.json
+
+# 临时产物
+__pycache__/
+*.pyc
+_smoke_data.json
+_smoke_views.js
+.venv/
+venv/
+demo/.seed-backup-*/

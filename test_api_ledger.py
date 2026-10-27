@@ -20,7 +20,7 @@ import urllib.error
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PY = r'C:\Users\53001\.workbuddy\binaries\python\envs\default\Scripts\python.exe'
+PY = r'<python>'
 PORT = 8812
 BASE = 'http://127.0.0.1:%d' % PORT
 OP = urllib.request.build_opener(urllib.request.ProxyHandler({}))   # 绕开环境代理
@@ -87,14 +87,14 @@ def make_fake_ledger():
     """现场生成合成台账（与真表同结构，零真实数据）"""
     import openpyxl
     wb = openpyxl.Workbook()
-    for idx, name in enumerate(('海大案件', '其他案件', '律师函')):
+    for idx, name in enumerate(('案件', '其他案件', '律师函')):
         ws = wb.active if idx == 0 else wb.create_sheet()
         ws.title = name
         if name != '律师函':
             ws.cell(row=1, column=1, value='案件管理台账模版表（合成测试用）')
             for col, h in enumerate(('序号', '案号', '案件', '案件类别', '委托人'), start=1):
                 ws.cell(row=3, column=col, value=h)
-            if name == '海大案件':
+            if name == '案件':
                 ws.cell(row=4, column=1, value=1)
                 ws.cell(row=4, column=2, value='(2026)测字第1号')
                 ws.cell(row=4, column=3, value='测试案A')
@@ -107,7 +107,7 @@ def make_fake_ledger():
     wb.close()
 
 
-def read_cell(col, row=4, sheet='海大案件'):
+def read_cell(col, row=4, sheet='案件'):
     import openpyxl
     wb = openpyxl.load_workbook(FAKE, read_only=True, data_only=True)
     try:
@@ -189,7 +189,7 @@ def main():
            and '07.01' in d['rows'][0]['进度日志'])
 
         # 2) dry-run 预览（不落盘、不备份）
-        s, pv = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, pv = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                      'text': '09.12：已寄出起诉状'})
         ck('无 confirm 走 dry-run', s == 200 and pv.get('dry_run') is True)
         ck('预览 I 列新值', pv['plan']['I_new'] == '09.12：已寄出起诉状')
@@ -203,7 +203,7 @@ def main():
         ck('dry-run 未产生备份', backups() == [])
 
         # 3) 确认写入（备份 + I→J）
-        s, r = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, r = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                     'text': '09.12：已寄出起诉状',
                                                     'confirm': True,
                                                     'expect': pv['expect']})
@@ -214,7 +214,7 @@ def main():
            and '07.01：更早的记录' in str(read_cell(10)))
 
         # 4) 台账被外部改动 → 冲突不覆盖
-        s, r2 = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, r2 = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                      'text': '09.12：不该覆盖',
                                                      'confirm': True, 'expect': pv['expect']})
         ck('拿旧快照写入 → 409 冲突', s == 409 and r2.get('conflict') is True)
@@ -225,10 +225,10 @@ def main():
         # 5) 台账被占用 → 入队；解锁后重试补写
         lock = os.path.join(TMP, '~$合成台账.xlsx')
         open(lock, 'w').close()
-        s, pv2 = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, pv2 = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                       'text': '09.13：占用时排的队',
                                                       'confirm': False})
-        s, r3 = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, r3 = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                      'text': '09.13：占用时排的队',
                                                      'confirm': True, 'expect': pv2['expect']})
         ck('台账被占用 → 409 且标记 busy', s == 409 and r3.get('busy') is True)
@@ -251,11 +251,11 @@ def main():
         ck('重试产生第二条备份', len(backups()) == 2)
 
         # 5b) 回迁不叠加日期（真台账事故回归：旧值自带 MM.DD： 前缀）
-        s, pv3 = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, pv3 = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                       'text': '09.14：再记一条'})
         ck('旧值自带日期 → 预览回迁原样（不叠日期）',
            pv3['plan']['J_entry_added'] == '09.13：占用时排的队')
-        s, r6 = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, r6 = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                      'text': '09.14：再记一条', 'confirm': True,
                                                      'expect': pv3['expect']})
         j_after = str(read_cell(10))
@@ -270,20 +270,20 @@ def main():
            and '已判决' in lr['status_pool'])
         ck('台账行接口给出池外清单字段', 'status_off_pool' in lr and 'status_observed' in lr)
         # 批 26：结案移行接口（合成台账**没有**「已结案」页 → 必须被拦住，不许凭空建/误写）
-        s, cl = req('/api/ledger/close', 'POST', {'sheet': '海大案件', 'row': 4, 'confirm': False})
+        s, cl = req('/api/ledger/close', 'POST', {'sheet': '案件', 'row': 4, 'confirm': False})
         ck('结案移行：台账缺「已结案」页时被拦（400）',
            s == 400 and '已结案' in str(cl.get('error')))
         s, cl2 = req('/api/ledger/close', 'POST', {'sheet': '律师函', 'row': 4, 'confirm': False})
         ck('结案移行：非案件页被拒（400）', s == 400)
         ck('逐行给出状态是否符合规定', lr['rows'][0].get('状态合规') is True)
 
-        s, bad = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, bad = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                       'text': '', 'status': '待执行',
                                                       'confirm': True})
         ck('池外状态 → 400 拒绝写入', s == 400 and '规定取值' in str(bad.get('error')))
         ck('被拒后 K 列未变', read_cell(11) == '待立案')
 
-        s, pv4 = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, pv4 = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                       'text': '', 'status': '已立案'})
         ck('纯状态变更预览：I_new 为 null（不动 I 列）', s == 200 and pv4['plan']['I_new'] is None)
         ck('纯状态变更预览：K 旧→新', pv4['plan']['K_old'] == '待立案'
@@ -292,7 +292,7 @@ def main():
            str(pv4['plan']['J_status_added']).endswith('【状态】待立案→已立案'))
         ck('状态预览未落盘', read_cell(11) == '待立案')
 
-        s, r7 = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, r7 = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                      'text': '', 'status': '已立案',
                                                      'confirm': True, 'expect': pv4['expect']})
         ck('纯状态写入成功且 K 列已改', s == 200 and read_cell(11) == '已立案')
@@ -301,11 +301,11 @@ def main():
         ck('纯状态写入：写后审计零意外（K 列在允许格内）', (r7.get('audit') or []) == [])
         ck('纯状态写入已备份', len(backups()) == 4)
 
-        s, pv5 = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, pv5 = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                       'text': '09.15：判决已下', 'status': '待判决'})
         ck('进度+状态预览：两者都有值',
            pv5['plan']['I_new'] == '09.15：判决已下' and pv5['plan']['K_new'] == '待判决')
-        s, r8 = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 4,
+        s, r8 = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 4,
                                                      'text': '09.15：判决已下', 'status': '待判决',
                                                      'confirm': True, 'expect': pv5['expect']})
         ck('进度+状态同时写：两列都落盘',
@@ -317,13 +317,13 @@ def main():
         ck('进度+状态同时写已备份', len(backups()) == 5)
 
         # 5d) 批 15：时间轴导出（落点隔离到临时目录，不写案件夹）
-        s, tp = req('/api/timeline/export', 'POST', {'sheet': '海大案件', 'row': 4})
+        s, tp = req('/api/timeline/export', 'POST', {'sheet': '案件', 'row': 4})
         ck('时间轴预览不落盘（dry_run）', s == 200 and tp['plan']['count'] >= 1
            and not os.path.exists(tp['plan']['dst']))
         ck('时间轴条目带来源标注',
            all(x['备注'] for x in tp['plan']['rows']))
         ck('时间轴落点尊重 TIMELINE_OUT_DIR', tp['plan']['dst_dir'].startswith(TL_OUT))
-        s, tr = req('/api/timeline/export', 'POST', {'sheet': '海大案件', 'row': 4, 'confirm': True})
+        s, tr = req('/api/timeline/export', 'POST', {'sheet': '案件', 'row': 4, 'confirm': True})
         ck('确认后已导出文件', s == 200 and tr.get('count', 0) >= 1 and os.path.isfile(tr['path']))
         import openpyxl as _ox
         _wb = _ox.load_workbook(tr['path'])
@@ -638,7 +638,7 @@ def main():
         s, _ = req('/api/ledger/progress', 'POST', {'sheet': '不存在的表', 'row': 4,
                                                     'text': 'x', 'confirm': True})
         ck('非法 sheet 400', s == 400)
-        s, _ = req('/api/ledger/progress', 'POST', {'sheet': '海大案件', 'row': 'abc',
+        s, _ = req('/api/ledger/progress', 'POST', {'sheet': '案件', 'row': 'abc',
                                                     'text': 'x', 'confirm': True})
         ck('row 非数字 400', s == 400)
 

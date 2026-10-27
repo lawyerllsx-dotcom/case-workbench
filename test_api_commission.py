@@ -48,7 +48,7 @@ def main():
         ck('meta 六件模板全就位', m['ok'] and len(m['templates']) == 6)
         ck('meta 档位（审级 3 / 授权 2 / 类型 5）',
            len(m['stages']) == 3 and len(m['auth_types']) == 2 and len(m['case_types']) == 5)
-        ck('meta 默认律师与法院', m['defaults']['lawyer'] == '安清惠'
+        ck('meta 默认律师与法院', m['defaults']['lawyer'] == '张律师'
            and '集美' in m['defaults']['court'])
 
         # ---------- plan ----------
@@ -79,21 +79,21 @@ def main():
         d1 = docx.Document(os.path.join(d, '1、委托代理合同（简易版）.docx'))
         t1 = '\n'.join(x.text for x in d1.paragraphs)
         ck('1号 甲方值在填写行', ('测试委托人甲' in t1) and ('甲方（委托方）：' in t1))
-        ck('1号 指派/对方/案由/审级', ('安清惠 为甲方' in t1) and ('测试对方乙' in t1)
+        ck('1号 指派/对方/案由/审级', ('张律师 为甲方' in t1) and ('测试对方乙' in t1)
            and ('买卖合同 纠纷一案' in t1) and ('一 审阶段' in t1))
         ck('1号 律师费', '律师代理费 6000 元' in t1)
         d2 = docx.Document(os.path.join(d, '2、授权委托书-民事.docx'))
         t2 = '\n'.join(x.text for x in d2.paragraphs)
-        ck('2号 委托人/代理人与授权方式', ('委托人：测试委托人甲' in t2) and ('律师：安清惠' in t2)
+        ck('2号 委托人/代理人与授权方式', ('委托人：测试委托人甲' in t2) and ('律师：张律师' in t2)
            and ('特别 授权' in t2))
         ck('2号 对方与审级', ('委托人与 测试对方乙' in t2) and ('本人 一 审诉讼代理人' in t2))
         d3 = docx.Document(os.path.join(d, '3、办案反馈表.docx'))
         t3 = '\n'.join(c.text for tb in d3.tables for row in tb.rows for c in row.cells)
         ck('3号 表格填入', all(s in t3 for s in ('测试委托人甲', '民事', '买卖合同纠纷')))
-        d5 = docx.Document(os.path.join(d, '5、送达地址确认书-集美法院格式.docx'))
+        d5 = docx.Document(os.path.join(d, '5、送达地址确认书-某法院格式.docx'))
         t5 = '\n'.join(c.text for tb in d5.tables for row in tb.rows for c in row.cells)
-        ck('5号 表格填入（当事人/律师）', ('测试委托人甲' in t5) and ('安清惠' in t5) and ('测试地址' in t5))
-        d6 = docx.Document(os.path.join(d, '6、账户确认表-集美法院格式.docx'))
+        ck('5号 表格填入（当事人/律师）', ('测试委托人甲' in t5) and ('张律师' in t5) and ('测试地址' in t5))
+        d6 = docx.Document(os.path.join(d, '6、账户确认表-某法院格式.docx'))
         t6 = '\n'.join(c.text for tb in d6.tables for row in tb.rows for c in row.cells)
         ck('6号 表格填入', ('测试委托人甲' in t6) and ('买卖合同纠纷' in t6))
 
@@ -106,8 +106,8 @@ def main():
                 bad.append(f)
         ck('六件无 {{ 残留', not bad)
         allt = t1 + t2 + t3 + t5 + t6
-        ck('旧样例数据零残留（消毒）', ('张友谅' not in allt) and ('18950194185' not in allt)
-           and ('350211195111083017' not in allt))
+        ck('旧样例数据零残留（消毒）', ('张友谅' not in allt) and ('13900000002' not in allt)
+           and ('350200199001010000' not in allt))
 
         # ---------- 重名避让 ----------
         r2 = A.api_commission_build({'fields': fields, 'case': case}, confirm=True)

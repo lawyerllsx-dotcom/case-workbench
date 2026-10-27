@@ -42,10 +42,10 @@ def main():
     import openpyxl
     import app as A
 
-    # 合成台账：只有「海大案件」（无「执行款」sheet——测自动建表路径）
+    # 合成台账：只有「示例案件」（无「执行款」sheet——测自动建表路径）
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = '海大案件'
+    ws.title = '案件'
     for i, h in enumerate(['序号', '案号', '案件'], start=1):
         ws.cell(row=3, column=i, value=h)
     wb.save(os.environ['LEDGER_PATH'])
@@ -63,7 +63,7 @@ def main():
         A.case_ops.ledger_case_rows = lambda: []
         A.case_ops.match_case_ledger = lambda name, rows=None: {'matched': {
             '案件': '测试案（台账名）', '案号': '（2026）闽0000民初1号',
-            'sheet': '海大案件', 'row': 4, 'match_score': 5}}
+            'sheet': '案件', 'row': 4, 'match_score': 5}}
 
         print('=== ① 清单与记录 ===')
         r = A.api_payments(case)

@@ -58,13 +58,13 @@ def _deep_merge(base, over):
 def load():
     """读配置：本机文件优先，缺失则用示例文件，最后回落内置默认值。"""
     data = copy.deepcopy(DEFAULTS)
-    source = 'builtin'
+    source = 'builtin(defaults)'
     for p in (EXAMPLE, LOCAL):          # 示例先铺底，本机覆盖
         if os.path.isfile(p):
             try:
                 with open(p, encoding='utf-8') as f:
                     data = _deep_merge(data, json.load(f))
-                source = os.path.basename(p) if p == LOCAL else source
+                source = os.path.basename(p)
             except (OSError, ValueError):
                 pass
     data['_meta'] = {'source': source, 'base_dir': BASE_DIR,

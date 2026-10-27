@@ -34,7 +34,7 @@ if os.environ.get('_WB_STDOUT_UTF8') != '1':
 
 import ledger_ops  # noqa: E402
 
-BASE = r'D:\案件\安清惠'
+BASE = r'D:\案件\你的案卷根'
 SCATTER_BOXES = {
     '介绍信': '01-委托手续',
     '所函': '01-委托手续',
@@ -219,7 +219,7 @@ def render_md(data):
 
 def main():
     ap = argparse.ArgumentParser(description='阶段 5 历史迁移只读扫描')
-    ap.add_argument('--out-dir', default=r'D:\WorkArea\Env-Maintenance\docs')
+    ap.add_argument('--out-dir', default=r'<工作目录>\docs')
     ap.add_argument('--json-only', action='store_true')
     args = ap.parse_args()
     data = build()

@@ -34,7 +34,7 @@ ck('模板可用', sohan_ops.template_ok()[0])
 CASE = os.path.join(TMP, '民-A-测试案')
 os.makedirs(CASE, exist_ok=True)
 
-p1 = sohan_ops.plan_sohan('厦门市思明区人民法院', '甲公司', '安清惠律师', '一审', '乙公司',
+p1 = sohan_ops.plan_sohan('厦门市思明区人民法院', '甲公司', '张律师律师', '一审', '乙公司',
                           '买卖合同纠纷', CASE)
 ck('计划无 blocked', not p1.get('blocked'))
 ck('目标在 01-委托手续', '01-委托手续' in p1['dst'])
@@ -45,7 +45,7 @@ with zipfile.ZipFile(r1['dst']) as z:
     nx = z.read('word/document.xml').decode('utf-8')
 ck('新值入档', '厦门市思明区人民法院' in nx and '甲公司' in nx)
 ck('旧值清空', '周锦全' not in nx)
-ck('抬头保留', '福建飞想律师事务所' in nx)
+ck('抬头保留', '某某律师事务所' in nx)
 
 # ② 同名避让
 p2 = sohan_ops.plan_sohan('厦门市思明区人民法院', '甲公司', '', '一审', '乙公司',

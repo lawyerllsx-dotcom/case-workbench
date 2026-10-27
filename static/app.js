@@ -548,7 +548,7 @@ function caseLedgerBriefHtml(l) {
 function subcasesHtml(subs) {
   if (!subs || !subs.length) return '';
   return `<h2 style="margin-top:12px">子案件夹（${subs.length}）</h2>
-    <div class="hint">系列案总夹下的各个子案（如「A海大」这类客户总夹）。</div>
+    <div class="hint">系列案总夹下的各个子案（如「A委托人」这类客户总夹）。</div>
     <table><tr><th>子案件夹</th><th>文件</th><th>00-收件箱</th><th>说明</th><th>台账</th></tr>` +
     subs.map(s => `<tr><td>${esc(s.name)}</td>
       <td>${s.files}</td>
@@ -936,7 +936,7 @@ async function viewNew() {
     <input id="n_ca" placeholder="案由（必填，如 买卖合同纠纷）">
     <select id="n_ty"><option>诉讼</option><option>执行</option><option>仲裁</option>
       <option>非诉</option><option>调解</option><option>执行异议</option></select>
-    <select id="n_sheet"><option>海大案件</option><option>其他案件</option></select>
+    <select id="n_sheet"><option>示例案件</option><option>其他案件</option></select>
   </div>
   <div class="row">
     <input id="n_court" placeholder="法院/仲裁（可空）" style="width:210px">
@@ -1762,7 +1762,7 @@ window.invLib = async function() {
 /* ---------------- 律师函（§4.4 业务线：台账表 + 文件系统夹） ---------------- */
 let LETTER_ITEMS = null;                    // 当前页的台账「律师函」行（供一键建任务取数）
 /* ============================ 散件页（批 36） ============================
-   爸爸 2026-09-17 定调：`D:\案件\安清惠` 下「律师函 / 合同 / 差旅发票 / 所函 /
+   爸爸 2026-09-17 定调：`D:\案件\你的案卷根` 下「律师函 / 合同 / 差旅发票 / 所函 /
    介绍信 / 判决书 / 接收到的文件」这些横向目录是**故意这么放的**（方便找），
    不归拢、不搬家；其中一部分在个案里没有（非直接经手）。本页只做**索引视图**：
    汇总 + 搜索 + 疑似归属，**一个文件都不动**。
@@ -2155,13 +2155,13 @@ async function viewSohan() {
     + '<label>致送法院 <span class="red">*</span></label>'
     + '<input id="sh_court" placeholder="如：厦门市思明区人民法院">'
     + '<label>委托人 <span class="red">*</span></label>'
-    + '<input id="sh_client" placeholder="如：福建海大饲料有限公司">'
+    + '<input id="sh_client" placeholder="如：福建委托人饲料有限公司">'
     + '<label>承办律师</label>'
     + `<input id="sh_lawyer" value="${esc(m.default_lawyer || '')}">`
     + '<label>诉讼阶段</label>'
     + `<select id="sh_stage">${(m.stages || []).map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select>`
     + '<label>对方当事人</label>'
-    + '<input id="sh_opponent" placeholder="如：林健荣、陈某某">'
+    + '<input id="sh_opponent" placeholder="如：当事人丙、陈某某">'
     + '<label>案由</label>'
     + '<input id="sh_cause" placeholder="如：买卖合同纠纷">'
     + '</div>';
@@ -2309,7 +2309,7 @@ function commissionCardHtml(cm) {
     + '<label>律师证号</label><input id="cm_lawyer_license" value="' + esc(d.lawyer_license || '') + '">'
     + '<label>律师所地址</label><input id="cm_lawyer_addr" value="' + esc(d.lawyer_addr || '') + '">'
     + '</div>';
-  h += '<div class="hint">⑤⑥ 是<b>集美法院格式</b>（去别院需换模板）；⑤ 中的电子送达选项、⑥ 的是否同意等，生成后手动勾选。</div>';
+  h += '<div class="hint">⑤⑥ 是<b>某法院格式</b>（去别院需换模板）；⑤ 中的电子送达选项、⑥ 的是否同意等，生成后手动勾选。</div>';
   h += '<div class="row" style="margin-top:8px"><button class="act" onclick="commissionPreview()">预览（不落盘）</button></div>';
   h += '<div id="cmOut"></div>';
   return h + '</div>';

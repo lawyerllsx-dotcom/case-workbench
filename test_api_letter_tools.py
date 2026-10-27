@@ -91,28 +91,28 @@ def main():
     ck('越界文件的 path → error（安全闸）',
        bool(A.api_letter_open_file({'path': r'C:\Windows\notepad.exe'}).get('error')))
     ck('不存在的文件 → error',
-       bool(A.api_letter_open_file({'folder': '海大', 'path': '__nope__.jpg'}).get('error')))
+       bool(A.api_letter_open_file({'folder': '委托人', 'path': '__nope__.jpg'}).get('error')))
 
     print('=== ⑤c 页面内预览（批 46.4）===')
     ck('缺 path → error', bool(A.api_letter_preview_file({}).get('error')))
     ck('越界路径 → error（安全闸）',
        bool(A.api_letter_preview_file({'path': r'C:\Windows\notepad.exe'}).get('error')))
     ck('不存在的图 → error',
-       bool(A.api_letter_preview_file({'folder': '海大', 'path': '__nope__.jpg'}).get('error')))
+       bool(A.api_letter_preview_file({'folder': '委托人', 'path': '__nope__.jpg'}).get('error')))
     # 批 46.6：PDF 改为**支持页内预览**（爸爸拍板「全在页面内」）——
     # 原断言「非图片 → error」已过期，改为验证 PDF 放行且 kind=pdf。
-    _pdf = A.api_letter_preview_file({'folder': '海大',
-        'path': r'律师函-福建海大VS陈飞鹏\律师函及签收记录\徐俊帆律师函（签收）.pdf'})
+    _pdf = A.api_letter_preview_file({'folder': '委托人',
+        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\徐俊帆律师函（签收）.pdf'})
     ck('PDF 支持页内预览（kind=pdf）',
        _pdf.get('ok') and _pdf.get('kind') == 'pdf'
        and str(_pdf.get('data_url') or '').startswith('data:application/pdf'))
     # 仍不支持的类型（如 .mp4）应明确拒绝并给提示
-    _mp4 = A.api_letter_preview_file({'folder': '海大',
-        'path': r'律师函-福建海大VS陈飞鹏\律师函及签收记录\TSA_SCREEN_20260609092927.mp4'})
+    _mp4 = A.api_letter_preview_file({'folder': '委托人',
+        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\TSA_SCREEN_20260609092927.mp4'})
     ck('不支持的类型 → error + 提示', bool(_mp4.get('error')) and 'hint' in _mp4)
     # 真图片：应返回 data_url
-    real = A.api_letter_preview_file({'folder': '海大',
-        'path': r'律师函-福建海大VS陈飞鹏\律师函及签收记录\徐俊帆签收.jpg'})
+    real = A.api_letter_preview_file({'folder': '委托人',
+        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\徐俊帆签收.jpg'})
     if real.get('ok'):
         ck('真图片返回 data_url', str(real.get('data_url', '')).startswith('data:image/'))
         ck('真图片返回 name/size_kb', bool(real.get('name')) and real.get('size_kb') > 0)
@@ -127,14 +127,14 @@ def main():
     # ---- 批 46.6：页面内文件操作（下载 + PDF 预览）----
     print()
     print('=== 批 46.6 页面内文件操作 ===')
-    # 取「海大」夹的文件清单（验证 files_list 结构 + 挑一个 PDF 做预览/下载）
+    # 取「委托人」夹的文件清单（验证 files_list 结构 + 挑一个 PDF 做预览/下载）
     fd = A.api_letter_rescan()
     ck('rescan 返回 folders', bool(fd.get('folders')))
     _hd = None
     for _f in ((fd.get('folders') or {}).get('folders') or []):
-        if _f.get('name') == '海大':
+        if _f.get('name') == '委托人':
             _hd = _f
-    ck('海大夹含 files_list（页内清单数据源）',
+    ck('委托人夹含 files_list（页内清单数据源）',
        bool(_hd) and isinstance(_hd.get('files_list'), list) and len(_hd['files_list']) > 0)
     ck('files_list 项含 name/kind/size_kb/mtime',
        bool(_hd) and all(k in (_hd['files_list'][0] or {})
@@ -147,18 +147,18 @@ def main():
             relpdf = (f['sub'] + '\\' + f['name']) if f.get('sub') else f['name']
             break
     if relpdf:
-        d = A.api_letter_download({'folder': '海大', 'path': relpdf})
+        d = A.api_letter_download({'folder': '委托人', 'path': relpdf})
         ck('download 返回 ok + b64', d.get('ok') and len(d.get('b64') or '') > 100)
         ck('download 带 filename', bool(d.get('filename')))
-        pv = A.api_letter_preview_file({'folder': '海大', 'path': relpdf})
+        pv = A.api_letter_preview_file({'folder': '委托人', 'path': relpdf})
         ck('PDF 预览放行（kind=pdf）', pv.get('kind') == 'pdf'
            and str(pv.get('data_url') or '').startswith('data:application/pdf'))
     else:
-        print('  (海大夹无 PDF，跳过 PDF 断言)')
+        print('  (委托人夹无 PDF，跳过 PDF 断言)')
     # 安全闸：越界必须先拒（download 同口径）
     ck('download 越界被拒（安全闸）',
        '安全闸' in (A.api_letter_download({'path': r'C:\Windows\win.ini'}).get('error') or ''))
-    ck('download 缺 path → error', bool(A.api_letter_download({'folder': '海大'}).get('error')))
+    ck('download 缺 path → error', bool(A.api_letter_download({'folder': '委托人'}).get('error')))
 
     # ---- 批 47：file_view 直出（PDF 白屏的正解；勿改回 dataURL）----
     print()
@@ -167,14 +167,14 @@ def main():
     ck('file_view 越界 → error（安全闸，越界最先）',
        '安全闸' in (A.api_letter_file_view({'path': r'C:\Windows\win.ini'}).get('error') or ''))
     ck('file_view 不存在 → error',
-       bool(A.api_letter_file_view({'folder': '海大', 'path': '__nope__.jpg'}).get('error')))
-    _fv_bad = A.api_letter_file_view({'folder': '海大',
-        'path': r'律师函-福建海大VS陈飞鹏\律师函及签收记录\TSA_SCREEN_20260609092927.mp4'})
+       bool(A.api_letter_file_view({'folder': '委托人', 'path': '__nope__.jpg'}).get('error')))
+    _fv_bad = A.api_letter_file_view({'folder': '委托人',
+        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\TSA_SCREEN_20260609092927.mp4'})
     ck('file_view 非白名单（.mp4）→ error + hint',
        bool(_fv_bad.get('error')) and 'hint' in _fv_bad)
     # 真图片：raw 为 bytes + mime 正确
-    _fv_img = A.api_letter_file_view({'folder': '海大',
-        'path': r'律师函-福建海大VS陈飞鹏\律师函及签收记录\徐俊帆签收.jpg'})
+    _fv_img = A.api_letter_file_view({'folder': '委托人',
+        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\徐俊帆签收.jpg'})
     if not _fv_img.get('error'):
         ck('file_view 真图片 → raw(bytes) + mime=image/jpeg',
            isinstance(_fv_img.get('raw'), bytes) and _fv_img.get('mime') == 'image/jpeg')
@@ -183,8 +183,8 @@ def main():
     else:
         print('  SKIP file_view 真图片不可用（%s）' % _fv_img.get('error'))
     # 真图片：raw 为 bytes + mime 正确
-    _fv_pdf = A.api_letter_file_view({'folder': '海大',
-        'path': r'律师函-福建海大VS陈飞鹏\律师函及签收记录\徐俊帆律师函（签收）.pdf'})
+    _fv_pdf = A.api_letter_file_view({'folder': '委托人',
+        'path': r'律师函-福建委托人VS陈飞鹏\律师函及签收记录\徐俊帆律师函（签收）.pdf'})
     if not _fv_pdf.get('error'):
         ck('file_view 真PDF → raw(bytes) + mime=application/pdf',
            isinstance(_fv_pdf.get('raw'), bytes) and _fv_pdf.get('mime') == 'application/pdf'
@@ -197,10 +197,10 @@ def main():
     ck('folder_files 越界夹名（..）→ 安全闸拒',
        '安全闸' in (A.api_letter_folder_files({'folder': '..'}).get('error') or ''))
     ck('folder_files 夹名含路径分隔 → 安全闸拒',
-       '安全闸' in (A.api_letter_folder_files({'folder': '海大\\..\\..'}).get('error') or ''))
+       '安全闸' in (A.api_letter_folder_files({'folder': '委托人\\..\\..'}).get('error') or ''))
     ck('folder_files 不存在夹 → error',
        bool(A.api_letter_folder_files({'folder': '不存在的夹XYZ'}).get('error')))
-    _ff = A.api_letter_folder_files({'folder': '海大'})
+    _ff = A.api_letter_folder_files({'folder': '委托人'})
     if not _ff.get('error'):
         ck('folder_files 正常夹 → ok + files 列表含 kind/name/size_kb',
            _ff.get('ok') and _ff.get('files') and all(

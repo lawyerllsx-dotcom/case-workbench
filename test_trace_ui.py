@@ -5,7 +5,7 @@ import json, os, urllib.request
 os.environ.setdefault('PLAYWRIGHT_BROWSERS_PATH', '0')
 from playwright.sync_api import sync_playwright   # noqa: E402
 
-OUT = r'D:\dev-tools\case_workbench\tmp\shots-v39d'
+OUT = r'<项目目录>\tmp\shots-v39d'
 os.makedirs(OUT, exist_ok=True)
 
 o = urllib.request.build_opener(urllib.request.ProxyHandler({}))

@@ -4,7 +4,7 @@ r"""commission_ops.py — 委托手续套件生成（批 64）
 民事委托手续六件套，从模板（templates\委托材料\，已标记化 `{{ 变量 }}`）
 用 docxtpl 渲染 → 落选定案件夹 `01-委托手续\`。
 
-六件（模板真源 D:\通用材料\民事诉讼类-委托材料，人稿只读；副本经
+六件（模板真源 <模板目录>，人稿只读；副本经
 mark_commission_templates.py 一次性标记化）：
   1 委托代理合同       2 授权委托书-民事     3 办案反馈表
   4 聘请律师提示（纯固定）5 送达地址确认书（集美格式）  6 账户确认表（集美格式）
@@ -39,8 +39,8 @@ DOCS = [
     {'file': '2、授权委托书-民事.docx'},
     {'file': '3、办案反馈表.docx'},
     {'file': '4、聘请律师提示.docx'},
-    {'file': '5、送达地址确认书-集美法院格式.docx'},
-    {'file': '6、账户确认表-集美法院格式.docx'},
+    {'file': '5、送达地址确认书-某法院格式.docx'},
+    {'file': '6、账户确认表-某法院格式.docx'},
 ]
 
 STAGES = ['一', '二', '再']          # 渲染进「{{ stage }} 审阶段」
@@ -150,9 +150,9 @@ def plan_commission(fields, case_folder=''):
                                     'opponent', 'cause', 'stage', 'auth_type'],
         '3、办案反馈表.docx': ['client', 'case_type', 'cause', 'lawyer', 'commission_date'],
         '4、聘请律师提示.docx': [],
-        '5、送达地址确认书-集美法院格式.docx': ['court', 'client', 'lawyer', 'client_id', 'lawyer_license',
+        '5、送达地址确认书-某法院格式.docx': ['court', 'client', 'lawyer', 'client_id', 'lawyer_license',
                                                  'address', 'lawyer_addr', 'phone', 'lawyer_phone'],
-        '6、账户确认表-集美法院格式.docx': ['case_no', 'cause', 'client', 'phone', 'payee', 'bank', 'account'],
+        '6、账户确认表-某法院格式.docx': ['case_no', 'cause', 'client', 'phone', 'payee', 'bank', 'account'],
     }
     for d in DOCS:
         keys = per_doc.get(d['file'], [])

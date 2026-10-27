@@ -10,9 +10,9 @@ TMP = tempfile.mkdtemp(prefix='arch_import_')
 CASE_ROOT = os.path.join(TMP, 'A个案')
 os.makedirs(CASE_ROOT, exist_ok=True)
 os.environ['CASE_OPS_ROOT'] = CASE_ROOT
-os.environ['CASE_OPS_BIZ_ROOT'] = os.path.join(TMP, '安清惠')
+os.environ['CASE_OPS_BIZ_ROOT'] = os.path.join(TMP, '张律师')
 
-sys.path.insert(0, r'D:\dev-tools\case_workbench')
+sys.path.insert(0, r'<项目目录>')
 import case_ops          # noqa: E402
 
 total, fails = [], []
@@ -144,7 +144,7 @@ ck('归档区根在 _归档区 下（催收）',
 ck('顾问单位已纳入 ARCHIVE_ZONES', '顾问单位' in case_ops.ARCHIVE_ZONES)
 ck('顾问单位 kind=client', case_ops.ARCHIVE_ZONES['顾问单位']['kind'] == 'client')
 
-mk('_归档区/顾问单位/商联/x.docx')
+mk('_归档区/顾问单位/某公司/x.docx')
 mk('_归档区/顾问单位/向上新视/y.docx')
 dgv = case_ops.archive_zone_scan('顾问单位')
 ck('顾问单位：扫到 2 件', dgv['total'] == 2)

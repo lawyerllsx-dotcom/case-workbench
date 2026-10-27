@@ -46,7 +46,7 @@ import case_ops           # noqa: E402
 VERSION = '1.0.0'
 # 存放子目录名 —— **跟随爸爸既有习惯**（批 46.2 修正）。
 # ⚠️ 教训：初版我自造了 `签收凭证`，但爸爸实际早就在用 `律师函及签收记录`
-#    （证据：`海大\律师函-福建海大VS陈飞鹏\律师函及签收记录\` 内有
+#    （证据：`委托人\律师函-福建委托人VS陈飞鹏\律师函及签收记录\` 内有
 #     「X律师函（签收）.pdf」+「X签收.jpg」成对文件）。
 #    **定目录约定前必须先扫既有结构，别另造名词。**
 EMS_SUBDIR = '律师函及签收记录'
@@ -76,7 +76,7 @@ def find_sign_records(folder_name):
     r"""列出某债务人夹下**所有**签收记录目录里的文件（跨层级找）。
 
     为什么不在固定深度找：实际结构层级不统一——
-      `海大\律师函-福建海大VS陈飞鹏\律师函及签收记录\X签收.jpg`（两级）
+      `委托人\律师函-福建委托人VS陈飞鹏\律师函及签收记录\X签收.jpg`（两级）
     故用**目录名匹配**（含「签收」二字）而非固定路径。
     返回 [{'dir','name','rel','size_kb','mtime','kind'}]，kind ∈ {图片, PDF, 其他}
     """
@@ -183,7 +183,7 @@ def suggest_folder(img_name, ocr_text, folders, letter_items=None):
     实测依据（批 46.2，用真实签收图 `林海明签收.jpg` 跑 OCR）：
       · 截图里**没有**当事人姓名（只有快递轨迹 + 地名）→ 姓名得从**文件名**取
       · OCR 能认出 **单号 / 签收时间 / 签收方式**（置信度 0.93，Grade A）
-      · ⚠️ **但夹名 ≠ 当事人名**！实踩：`林海明签收.jpg` 匹配不到「海大」夹，
+      · ⚠️ **但夹名 ≠ 当事人名**！实踩：`林海明签收.jpg` 匹配不到「委托人」夹，
         因为「林海明」是**保证人**、夹名是委托人侧简称。正解 = **借台账桥接**：
         文件名里的名字 → 在哪一行的「收函对象」里出现 → 取那行的 matched_folder。
 
@@ -317,10 +317,10 @@ def selftest():
             fails.append(name)
 
     # -- extract_fields：EMS 单号（EMS 标准 13 位）
-    f = extract_fields('您的快递已签收，EMS单号 1138294756123，签收人：张三')
-    chk('单号 13 位', f['ems_no'] == '1138294756123')
+    f = extract_fields('您的快递已签收，EMS单号 1139000000013，签收人：张三')
+    chk('单号 13 位', f['ems_no'] == '1139000000013')
     f2 = extract_fields('运单号 113 8294 7561 23 已签收')
-    chk('带空格分隔的单号也能抓', f2['ems_no'] == '1138294756123')
+    chk('带空格分隔的单号也能抓', f2['ems_no'] == '1139000000013')
     f2b = extract_fields('单号 11382947561')          # 11 位 = 残缺，不该当单号
     chk('位数不足不误抓', f2b['ems_no'] == '')
     f3 = extract_fields('今天天气不错')
@@ -344,8 +344,8 @@ def selftest():
     chk('无标签不乱抓姓名', not f7.get('signer_name'))
 
     # -- summarize
-    s = summarize({'ems_no': '1138294756123', 'sign_time': '2026-09-18', 'status': '已签收'})
-    chk('summary 拼接', '1138294756123' in s and '已签收' in s)
+    s = summarize({'ems_no': '1139000000013', 'sign_time': '2026-09-18', 'status': '已签收'})
+    chk('summary 拼接', '1139000000013' in s and '已签收' in s)
 
     # -- 路径与文件类型
     # -- 存放目录跟随既有习惯（批 46.2 修正：原自造「签收凭证」→ 改「律师函及签收记录」）
@@ -354,21 +354,21 @@ def selftest():
     chk('proof_dir 以既有习惯名结尾', proof_dir('__不存在的夹__').endswith(EMS_SUBDIR))
 
     # -- suggest_folder：三级匹配（台账桥接 / 文件名 / OCR），且不猜
-    _fl = [{'name': '海大'}, {'name': '杨记水产'}]
-    _items = [{'序号': 2, '收函对象': '陈飞鹏、林海明 + 保证人徐俊帆', 'matched_folder': '海大'},
+    _fl = [{'name': '委托人'}, {'name': '杨记水产'}]
+    _items = [{'序号': 2, '收函对象': '陈飞鹏、林海明 + 保证人徐俊帆', 'matched_folder': '委托人'},
               {'序号': 9, '收函对象': '杨记水产、杨建忠', 'matched_folder': '杨记水产'}]
     r = suggest_folder('林海明签收.jpg', '', _fl, _items)
-    chk('台账桥接：保证人名也能找到夹', r['folder'] == '海大' and r['via'] == 'ledger')
+    chk('台账桥接：保证人名也能找到夹', r['folder'] == '委托人' and r['via'] == 'ledger')
     r = suggest_folder('杨记水产签收.jpg', '', _fl, _items)
     chk('台账桥接：杨记水产', r['folder'] == '杨记水产')
-    r = suggest_folder('海大-某图.jpg', '', _fl, None)
-    chk('文件名直含夹名（无台账时）', r['folder'] == '海大' and r['via'] == 'filename')
+    r = suggest_folder('委托人-某图.jpg', '', _fl, None)
+    chk('文件名直含夹名（无台账时）', r['folder'] == '委托人' and r['via'] == 'filename')
     r = suggest_folder('x.jpg', '本件属于杨记水产的函', _fl, None)
     chk('OCR 文本含夹名', r['folder'] == '杨记水产' and r['via'] == 'ocr')
     r = suggest_folder('完全无关.jpg', '', _fl, _items)
     chk('匹配不到 → 空（不猜）', r['folder'] == '')
-    r = suggest_folder('海大签收.jpg', '', [{'name': '海'}, {'name': '海大'}], _items)
-    chk('夹名 <2 字不参与匹配', r['folder'] == '海大')
+    r = suggest_folder('委托人签收.jpg', '', [{'name': '海'}, {'name': '委托人'}], _items)
+    chk('夹名 <2 字不参与匹配', r['folder'] == '委托人')
     chk('find_sign_records 不存在夹 → 空', find_sign_records('__不存在的夹__') == [])
     chk('is_image 认 png', is_image('a.png') and not is_image('a.docx'))
 

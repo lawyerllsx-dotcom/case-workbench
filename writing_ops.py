@@ -7,7 +7,7 @@ r"""writing_ops.py — 写作项目管理（批 51，CaseBoard 反向移植，20
 - 版本文件**复制入卷**：`<案件夹>\02-法律文书\<项目标题>\vNN-YYYYMMDD-<原文件名>`
   （02-法律文书 = 《_材料怎么放.md》规定的文书目录；目录不存在则新建＝只新增、不覆盖）
 - 状态机：起草 → 修订 → 送审 → 定稿；允许 定稿 → 修订 回退；其余跨跳拒绝
-- 写前自动备份 db 到 `D:\备份\08-工作台数据备份\`（保留 10 份；`WORKBENCH_BACKUP_DIR` 可覆盖）
+- 写前自动备份 db 到 `<工作台数据备份目录>\`（保留 10 份；`WORKBENCH_BACKUP_DIR` 可覆盖）
 - **台账零写入**；**只新增不覆盖不删除**
 
 CLI：
@@ -26,9 +26,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(HERE, 'data')
 sys.path.insert(0, HERE)
 import case_ops          # noqa: E402  只读用：案件根
+import config as _config  # noqa: E402
 
 DB_PATH = os.environ.get('WORKBENCH_DB') or os.path.join(DATA_DIR, 'workbench.db')
-BACKUP_DIR = os.environ.get('WORKBENCH_BACKUP_DIR') or r'D:\备份\08-工作台数据备份'
+BACKUP_DIR = (os.environ.get('WORKBENCH_BACKUP_DIR')
+              or _config.path('paths.db_backup')
+              or os.path.join(DATA_DIR, 'backup'))
 KEEP_BACKUPS = 10
 MAX_MB = float(os.environ.get('WRITING_MAX_MB') or '40')
 

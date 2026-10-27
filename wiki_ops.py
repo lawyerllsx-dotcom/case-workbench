@@ -6,7 +6,7 @@ r"""wiki_ops.py — 共享知识库（Obsidian vault）写入小工具（法律�
   ① **新建案件实体页骨架**（`plan_case_entity`/`write_case_entity`）
   ② **结案标记**（`plan_mark_closed`/`apply_mark_closed`，批 28）：只做**锚点增量改**（frontmatter
      status/tags/updated + 标题下标记行 + 文末「结案归档」小节），**不重写整页**、幂等、写前备份
-     （落 `D:\备份\03-vault备份`，可用 `backup_dir` 覆盖）、写后复读校验、校验不过自动回滚
+     （落 `<知识库备份目录>`，可用 `backup_dir` 覆盖）、写后复读校验、校验不过自动回滚
 纪律（写死在代码里）：
   - **新建只新建、绝不覆盖**：目标页已存在（含同名文件）→ 直接拒绝并回原路径
   - **结案标记只认精确页名**：找不到页 → 不猜、不新建，回报警告；页面内容与预览不一致 → 拒绝覆盖
@@ -36,7 +36,7 @@ if os.environ.get('_WB_STDOUT_UTF8') != '1':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 VERSION = '1.1.0'
-DEFAULT_WIKI = r'C:\Users\53001\Documents\Obsidian Vault\wiki'
+DEFAULT_WIKI = r'<知识库目录>'
 ENTITY_SUBDIR = 'entities'
 BAD_FN = re.compile(r'[\\/:*?"<>|\n\r\t]')
 
@@ -394,7 +394,7 @@ def apply_mark_closed(plan, backup_dir=None):
     if src != plan['before']:
         raise RuntimeError('页面内容已变（与预览时不一致），拒绝覆盖：%s' % plan['path'])
     bak = None
-    bd = backup_dir or os.environ.get('WIKI_BACKUP_DIR') or r'D:\备份\03-vault备份'
+    bd = backup_dir or os.environ.get('WIKI_BACKUP_DIR') or r'<知识库备份目录>'
     try:
         os.makedirs(bd, exist_ok=True)
         stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
@@ -494,15 +494,15 @@ def selftest():
 
         # ---- 批 28：案件 → 知识库页 建议匹配（只给建议、认不出明说）----
         pgs = [{'title': t} for t in (
-            '福州海大诉许明竹等买卖合同纠纷案', '福州海大诉陈嘉豪等买卖合同纠纷案',
-            '福建海大诉林健荣等买卖合同纠纷案', '漳州佳联化工诉联胜华阳盛月乔买卖合同纠纷案',
+            '福州委托人诉当事人甲等买卖合同纠纷案', '福州委托人诉当事人乙等买卖合同纠纷案',
+            '福建委托人诉当事人丙等买卖合同纠纷案', '漳州佳联化工诉联胜华阳盛月乔买卖合同纠纷案',
             '陈丽萍执行异议案（民-A-26010）')]
-        s1 = suggest_case_page(['福州海大vs许明竹、吴群华、许明华、吴伟腾-买卖合同纠纷'], pgs)
-        chk('建议匹配：台账名 ↔ 知识库页', s1['suggest'] == '福州海大诉许明竹等买卖合同纠纷案'
+        s1 = suggest_case_page(['福州委托人vs当事人甲、吴群华、许明华、吴伟腾-买卖合同纠纷'], pgs)
+        chk('建议匹配：台账名 ↔ 知识库页', s1['suggest'] == '福州委托人诉当事人甲等买卖合同纠纷案'
             and s1['score'] >= 2 and s1['why'])
         chk('建议匹配：简短主体名也能认（含被包含）',
-            suggest_case_page(['福建海大饲料诉林健荣、王惠华等-买卖合同纠纷'], pgs)['suggest']
-            == '福建海大诉林健荣等买卖合同纠纷案')
+            suggest_case_page(['福建委托人饲料诉当事人丙、王惠华等-买卖合同纠纷'], pgs)['suggest']
+            == '福建委托人诉当事人丙等买卖合同纠纷案')
         chk('建议匹配：案卷夹名里的主体词能认',
             suggest_case_page(['执-24585_漳州佳联化工VS漳州联胜超纤、盛月乔_买卖合同纠纷'], pgs)['suggest']
             == '漳州佳联化工诉联胜华阳盛月乔买卖合同纠纷案')
@@ -510,8 +510,8 @@ def selftest():
             suggest_case_page(['陈丽萍vs李喜前、王署心-执行异议'], pgs)['suggest']
             == '陈丽萍执行异议案（民-A-26010）')
         chk('建议匹配：唯一最高才认定（同类不同案不误配）',
-            suggest_case_page(['福州海大vs陈嘉豪、黄铸祥等'], pgs)['suggest']
-            == '福州海大诉陈嘉豪等买卖合同纠纷案')
+            suggest_case_page(['福州委托人vs当事人乙、黄铸祥等'], pgs)['suggest']
+            == '福州委托人诉当事人乙等买卖合同纠纷案')
         s5 = suggest_case_page(['广州某某公司VS某某某_买卖合同纠纷'], pgs)
         chk('建议匹配：认不出就明说（不猜）', s5['suggest'] is None and not s5['candidates'])
     finally:

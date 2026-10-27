@@ -36,7 +36,7 @@ def _make_ledger(path, with_contract=True):
     import openpyxl
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = '海大案件'
+    ws.title = '案件'
     ws.cell(row=1, column=1, value='测试')
     if with_contract:
         wc = wb.create_sheet('合同审查')

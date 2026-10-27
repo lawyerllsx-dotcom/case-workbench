@@ -14,8 +14,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from migration_apply import RENAME_MAP  # noqa: E402
 
-WIKI = r'C:\Users\53001\Documents\Obsidian Vault\wiki'
-ROOTS = [WIKI, r'D:\WorkArea\My-case', r'D:\WorkArea\Env-Maintenance\docs']
+WIKI = r'<知识库目录>'
+ROOTS = [WIKI, r'<案件项目目录>', r'<工作目录>\docs']
 SKIP_DIRS = {'.git', '__pycache__', 'node_modules', 'sessions', '.obsidian'}
 SKIP_FILES = {
     'log.md',
