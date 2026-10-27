@@ -1,0 +1,23 @@
+# 换行符策略
+# 默认交给 git 自动处理（仓库内 LF，按平台检出）
+* text=auto
+
+# Windows 批处理必须是 CRLF：声明为二进制，仓库内原样保留，任何方式下载都不被转换
+*.bat -text
+*.cmd -text
+
+# 脚本 / 文档
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+Makefile text eol=lf
+
+# 二进制
+*.docx binary
+*.xlsx binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ico binary
